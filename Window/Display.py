@@ -63,7 +63,6 @@ class Display(tk.Frame):
             for x in range(self.env.FIELD_SIZE):
                 candyID = self.env.state[y,x]
 
-                candyID = 25
                 if self.previous_state[y,x] == candyID:
                     continue
                 
