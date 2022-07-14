@@ -1,19 +1,63 @@
 import tkinter as tk
 from tkinter.constants import *
 
+from CandyCrushGym import *
 
-# Create the canvas, size in pixels.
-canvas = tk.Canvas(width=300, height=200, bg='black')
+def main():
 
-# Pack the canvas into the Frame.
-canvas.pack(expand=YES, fill=BOTH)
+    root_img_path = "./Images"
+    env = CandyCrushGym()
 
-# Load the .gif image file.
-gif1 = tk.PhotoImage(file='./Original/Blue.png')
+    state = env.reset()
 
-# Put gif image on canvas.
-# Pic's upper-left corner (NW) on the canvas is at x=50 y=10.
-canvas.create_image(0, 0, image=gif1, anchor=NW)
+    canvas = tk.Canvas(width=500, height=500, bg='black')
+    canvas.pack(expand=YES, fill=BOTH)
+    
+    image_size = 60
+    images = []
+    for y in range(state.shape[1]):
+        for x in range(state.shape[0]):
+            candyID = state[y,x]
 
-# Run it...
-tk.mainloop()
+            if env.isNormalCandy(candyID):
+                file_name = convert_normalCandyID_name(candyID)
+                image = tk.PhotoImage(file=f"{root_img_path}/Normal/{file_name}.png")
+            
+            elif env.isWrappedCandyID(candyID):
+                candyID = env.convertWrappedCandy_toNormal(candyID)
+                image = tk.PhotoImage(file=f"{root_img_path}/Wrapped/{file_name}.png") 
+            
+            elif env.isHorizontalStrippedCandy(candyID):
+                candyID = env.convertHorizontalStrippedCandy_toNormal(candyID)
+                image = tk.PhotoImage(file=f"{root_img_path}/Striped/Horizontal/{file_name}.png")
+
+            elif env.isVerticalStrippedCandy(candyID):
+                candyID = env.convertVerticalStrippedCandy_toNormal(candyID)
+                image = tk.PhotoImage(file=f"{root_img_path}/Striped/Vertical/{file_name}.png")
+
+            images.append(image)
+            canvas.create_image(x*image_size, y*image_size, image=image, anchor=NW)
+
+
+    tk.mainloop()
+
+
+def convert_normalCandyID_name(candyID):
+    if candyID == 1:
+        return "Red"
+    elif candyID == 2:
+        return "Orange"
+    elif candyID == 3:
+        return "Yellow"
+    elif candyID == 4:
+        return "Green"
+    elif candyID == 5:
+        return "Blue"
+    elif candyID == 6:
+        return "Purple"
+
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("KeyboardInterrupt received")
