@@ -6,17 +6,19 @@ from CandyCrushGym import *
 def main():
 
     root_img_path = "./Images"
+        
     env = CandyCrushGym()
 
     state = env.reset()
 
-    canvas = tk.Canvas(width=500, height=500, bg='black')
+    image_size = 60
+    canvas = tk.Canvas(width=env.FIELD_SIZE * image_size, height=env.FIELD_SIZE * image_size, bg='black')
     canvas.pack(expand=YES, fill=BOTH)
     
-    image_size = 60
+    
     images = []
-    for y in range(state.shape[1]):
-        for x in range(state.shape[0]):
+    for y in range(env.FIELD_SIZE):
+        for x in range(env.FIELD_SIZE):
             candyID = state[y,x]
 
             if env.isNormalCandy(candyID):
@@ -25,14 +27,17 @@ def main():
             
             elif env.isWrappedCandyID(candyID):
                 candyID = env.convertWrappedCandy_toNormal(candyID)
+                file_name = convert_normalCandyID_name(candyID)
                 image = tk.PhotoImage(file=f"{root_img_path}/Wrapped/{file_name}.png") 
             
             elif env.isHorizontalStrippedCandy(candyID):
                 candyID = env.convertHorizontalStrippedCandy_toNormal(candyID)
+                file_name = convert_normalCandyID_name(candyID)
                 image = tk.PhotoImage(file=f"{root_img_path}/Striped/Horizontal/{file_name}.png")
 
             elif env.isVerticalStrippedCandy(candyID):
                 candyID = env.convertVerticalStrippedCandy_toNormal(candyID)
+                file_name = convert_normalCandyID_name(candyID)
                 image = tk.PhotoImage(file=f"{root_img_path}/Striped/Vertical/{file_name}.png")
 
             images.append(image)
