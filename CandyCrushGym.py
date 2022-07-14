@@ -5,7 +5,7 @@ class CandyCrushGym:
 
     def __init__(self):
 
-        self.FIELD_SIZE = 5
+        self.FIELD_SIZE = 8
         self.NUM_DIRECTIONS = 4
         self.NUM_ELEMENTS = 5 + 1
         self.REWARD_PER_HIT = 0.25
@@ -81,7 +81,7 @@ class CandyCrushGym:
         elif direction == 3:
             x_swap += -1
         
-        old_state = self.state
+        old_state = np.copy(self.state)
  
         # swap
         tmp = self.state[y,x]
