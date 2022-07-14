@@ -63,6 +63,7 @@ class Display(tk.Frame):
             for x in range(self.env.FIELD_SIZE):
                 candyID = self.env.state[y,x]
 
+                candyID = 25
                 if self.previous_state[y,x] == candyID:
                     continue
                 
@@ -85,6 +86,8 @@ class Display(tk.Frame):
                     file_name = self.convert_normalCandyID_name(candyID)
                     image = tk.PhotoImage(file=f"{self.root_img_path}/Striped/Vertical/{file_name}.png")
 
+                elif candyID == self.env.COLOR_BOMB_CANDY_ID:
+                    image = tk.PhotoImage(file=f"{self.root_img_path}/ColourBomb/ColourBomb.png")
                 if self.previous_state[y,x] == 0:
                     self.images.append(image)
                 else:
