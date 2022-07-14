@@ -4,7 +4,6 @@ import sys
 sys.path.append("../")
 from CandyCrushGym import *
 
-import time 
 def main():
 
     env = CandyCrushGym()

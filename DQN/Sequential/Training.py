@@ -79,8 +79,8 @@ def main():
                 agent.update_target()
 
             # Save weights
-            # if episode % 10 == 0:
-            #     agent.q_net.save_weights(f"./saved_models/trainied_weights_epoch_{episode}", save_format="tf")
+            if episode % 10 == 0:
+                agent.q_net.save_weights(f"./saved_models/trainied_weights_epoch_{episode}", save_format="tf")
 
             tf.summary.scalar(f"Average reward", np.mean(rewards), step=episode)
             tf.summary.scalar(f"Score", score, step=episode)

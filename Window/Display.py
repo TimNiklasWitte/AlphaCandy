@@ -23,15 +23,10 @@ class Display(tk.Frame):
         self.root_img_path = "./Images"
         self.env = env
 
-        # Create window
+        # Game window
         tk.Frame.__init__(self, master)
-        master.geometry(f"{self.window_width}x{self.window_height}")
-        # self.canvas = tk.Canvas(master, height=game_height, width=game_width, bg='white')
-        # self.canvas.pack(side=LEFT)
-
-        
+        master.geometry(f"{self.window_width}x{self.window_height}")     
         self.canvas = tk.Canvas(width=env.FIELD_SIZE * self.image_size, height=env.FIELD_SIZE * self.image_size, bg='black')
-        #canvas.pack(expand=YES, fill=BOTH)
         self.canvas.pack(side=LEFT)
 
         # Plots
