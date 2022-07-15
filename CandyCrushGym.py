@@ -50,6 +50,7 @@ class CandyCrushGym:
         elif direction == 3:
             x_swap += -1
 
+        print(f"{action}: ({x}, {y}) ({x_swap}, {y_swap}) -> {self.isValidIndex(x,y) and self.isValidIndex(x_swap, y_swap)}")
         return self.isValidIndex(x,y) and self.isValidIndex(x_swap, y_swap)
            
 
