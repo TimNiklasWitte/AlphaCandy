@@ -31,8 +31,8 @@ class CandyCrushGym:
 
         direction = action % self.NUM_DIRECTIONS
 
-        x = fieldID // (self.FIELD_SIZE * self.FIELD_SIZE)
-        y = fieldID % (self.FIELD_SIZE * self.FIELD_SIZE)
+        x = fieldID // self.FIELD_SIZE
+        y = fieldID % self.FIELD_SIZE
 
         # Swap candy
         x_swap = x # attention: numpy x->y are swapped
@@ -125,8 +125,8 @@ class CandyCrushGym:
 
         direction = action % self.NUM_DIRECTIONS
 
-        x = fieldID // (self.FIELD_SIZE * self.FIELD_SIZE)
-        y = fieldID % (self.FIELD_SIZE * self.FIELD_SIZE)
+        x = fieldID // self.FIELD_SIZE
+        y = fieldID % self.FIELD_SIZE
 
         # Swap candy
         x_swap = x # attention: numpy x->y are swapped
