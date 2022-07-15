@@ -42,6 +42,8 @@ class Display(tk.Frame):
         self.previous_state = np.zeros_like(env.state)
         self.images = []
 
+        self.candies = []
+
     def convert_normalCandyID_name(self, candyID):
         if candyID == 1:
             return "Red"
@@ -62,6 +64,11 @@ class Display(tk.Frame):
         for y in range(self.env.FIELD_SIZE):
             for x in range(self.env.FIELD_SIZE):
                 candyID = self.env.state[y,x]
+
+                if candyID == -1:
+                    self.images[y*self.env.FIELD_SIZE + x] = None
+                    self.previous_state[y,x] = -1
+                    continue
 
                 if self.previous_state[y,x] == candyID:
                     continue
@@ -87,13 +94,15 @@ class Display(tk.Frame):
 
                 elif candyID == self.env.COLOR_BOMB_CANDY_ID:
                     image = tk.PhotoImage(file=f"{self.root_img_path}/ColourBomb/ColourBomb.png")
+                
                 if self.previous_state[y,x] == 0:
                     self.images.append(image)
                 else:
                     self.images[y*self.env.FIELD_SIZE + x] = image
 
-                self.canvas.create_image(x*self.image_size, y*self.image_size, image=image, anchor=NW)
-                
+                candy = self.canvas.create_image(x*self.image_size, y*self.image_size, image=image, anchor=NW)
+                self.candies.append(candy)
+
                 self.previous_state[y,x] = candyID
 
 

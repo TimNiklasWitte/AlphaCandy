@@ -111,12 +111,58 @@ class CandyCrushGym:
                             self.state[i,column_idx] = x
         
         self.columns_to_fill = set()
-        # print(self.state)
-        # print(reward)
-        # print("---------")
+     
         return self.state, reward
 
+    
+    def step_display(self, action):
+        
+        if not self.isValidAction(action):
+            raise ValueError("Invalid action")
 
+        fieldID = action // self.NUM_DIRECTIONS
+
+        direction = action % self.NUM_DIRECTIONS
+
+        x = fieldID // (self.FIELD_SIZE * self.FIELD_SIZE)
+        y = fieldID % (self.FIELD_SIZE * self.FIELD_SIZE)
+
+        # Swap candy
+        x_swap = x # attention: numpy x->y are swapped
+        y_swap = y # attention: numpy x->y are swapped
+        # top
+        if direction == 0:
+            y_swap += -1
+        # down
+        elif direction == 1: 
+            y_swap += 1
+        # right 
+        elif direction == 2:
+            x_swap += 1
+        # left 
+        elif direction == 3:
+            x_swap += -1
+        
+
+        # swap
+        tmp = self.state[y,x]
+        self.state[y,x] = self.state[y_swap, x_swap]
+        self.state[y_swap, x_swap] = tmp
+
+        reward = self.react(x,y, x_swap, y_swap)
+
+        if reward == 0:
+
+            # swap again -> undo previous swap
+            tmp = self.state[y,x]
+            self.state[y,x] = self.state[y_swap, x_swap]
+            self.state[y_swap, x_swap] = tmp
+        
+        columns_to_fill = self.columns_to_fill
+        
+        self.columns_to_fill = set()
+     
+        return self.state, reward, columns_to_fill
     
     def react(self,x,y, x_swap, y_swap):
         
