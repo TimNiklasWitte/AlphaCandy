@@ -81,8 +81,7 @@ class CandyCrushGym:
         elif direction == 3:
             x_swap += -1
         
-        old_state = np.copy(self.state)
- 
+
         # swap
         tmp = self.state[y,x]
         self.state[y,x] = self.state[y_swap, x_swap]
@@ -91,7 +90,11 @@ class CandyCrushGym:
         reward = self.react(x,y, x_swap, y_swap)
 
         if reward == 0:
-            self.state = old_state
+
+            # swap again -> undo previous swap
+            tmp = self.state[y,x]
+            self.state[y,x] = self.state[y_swap, x_swap]
+            self.state[y_swap, x_swap] = tmp
         else:
             # Shift column to remove -1 (hit elements)
             for column_idx in self.columns_to_fill:
