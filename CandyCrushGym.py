@@ -7,7 +7,7 @@ class CandyCrushGym:
 
         self.FIELD_SIZE = 8
         self.NUM_DIRECTIONS = 4
-        self.NUM_ELEMENTS = 5 + 1
+        self.NUM_ELEMENTS = 7
         self.REWARD_PER_HIT = 0.25
 
         self.COLOR_BOMB_CANDY_ID = 25
@@ -18,7 +18,7 @@ class CandyCrushGym:
 
     def reset(self):
 
-        rnds = np.random.randint(1, self.NUM_ELEMENTS + 1, size=self.FIELD_SIZE*self.FIELD_SIZE, dtype=np.int8)
+        rnds = np.random.randint(1, self.NUM_ELEMENTS, size=self.FIELD_SIZE*self.FIELD_SIZE, dtype=np.int8)
         self.state = np.reshape(rnds, newshape=(self.FIELD_SIZE,self.FIELD_SIZE))
 
         #self.state = np.array([[4,4,4,4,4],[1,2,12,0,4],[4,5,-1,-1,-1], [4,0,0,0,4], [0,0,0,0,5]])
