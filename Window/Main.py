@@ -92,6 +92,8 @@ def display_execute_action(action, env, window):
             window.update_plots(reward)
             window.update_game_field()
 
+            time.sleep(show_empty_time) # show also undo swap game state
+
             return 
         
         window.update_game_field()
