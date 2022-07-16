@@ -18,21 +18,13 @@ def main():
     
     win.update_game_field()
 
-    # arrow_top_img = tk.PhotoImage(file="./Images/Arrows/Top.png")
-    # arrow_down_img = tk.PhotoImage(file="./Images/Arrows/Down.png")
-    # arrow_right_img = tk.PhotoImage(file="./Images/Arrows/right.png")
-    # arrow_left_img = tk.PhotoImage(file="./Images/Arrows/right.png")
-
-    # win.display.canvas.create_image(60, 90, image=image, anchor=NW)
-    # time.sleep(10)
-
     for i in range(100):
 
         win.update_game_field()
         
         while True:
             action = np.random.randint(0, 255)
-            print("try: ", action)
+            
             reward = 0
             if env.isValidAction(action):
 
@@ -48,43 +40,82 @@ def main():
                 x = fieldID // env.FIELD_SIZE
                 y = fieldID % env.FIELD_SIZE
 
+                print(f"x: {x} y: {y}")
+
                 # top
                 if direction == 0:
                     img = tk.PhotoImage(file="./Images/Arrows/Top.png")
-                # down
-                elif direction == 1:
-                    img = tk.PhotoImage(file="./Images/Arrows/Down.png")
                 # right
-                elif direction == 2:
+                elif direction == 1:
                     img = tk.PhotoImage(file="./Images/Arrows/Right.png")
+                # down
+                elif direction == 2:
+                    img = tk.PhotoImage(file="./Images/Arrows/Down.png")
                 # left
                 else:
                     img = tk.PhotoImage(file="./Images/Arrows/Left.png")
 
                 # top or down
-                if direction == 0 or direction == 1:
-                    win.display.canvas.create_image(x * win.display.image_size , y * win.display.image_size + win.display.image_size//2, image=img, anchor=NW)
+                if direction == 0 or direction == 2:
+                    win.display.canvas.create_image(x * win.display.image_size , y * win.display.image_size - win.display.image_size//2, image=img, anchor=NW)
                 
                 # right or left
                 else:
                     win.display.canvas.create_image(x * win.display.image_size + win.display.image_size//2, y * win.display.image_size, image=img, anchor=NW)
 
-                time.sleep(1.5)
+                time.sleep(1)
                 img = None
 
-                state, reward, columns_to_fill = env.step_display(action)
+                #
+                # Swap
+                #
+
+                # Swap candy
+                x_swap = x # attention: numpy x->y are swapped
+                y_swap = y # attention: numpy x->y are swapped
+                # top
+                if direction == 0:
+                    y_swap += -1
+                # down
+                elif direction == 2: 
+                    y_swap += 1
+                # right 
+                elif direction == 1:
+                    x_swap += 1
+                # left 
+                elif direction == 3:
+                    x_swap += -1
+
+                # swap
+                tmp = env.state[y,x]
+                env.state[y,x] = env.state[y_swap, x_swap]
+                env.state[y_swap, x_swap] = tmp
+
+
+                win.update_game_field()
+                time.sleep(1)
+
+                reward = env.react(x,y, x_swap, y_swap)
+                #state, reward, columns_to_fill = env.step_display(action)
+
+                if reward == 0:
+                    tmp = env.state[y,x]
+                    env.state[y,x] = env.state[y_swap, x_swap]
+                    env.state[y_swap, x_swap] = tmp
 
                 win.update_game_field()
                 win.update_plots(reward)
                 print(reward)
-                time.sleep(1.5)
+                time.sleep(1)
 
                 break 
         
         
         
 
-        columns_to_fill = list(columns_to_fill)
+        columns_to_fill = list(env.columns_to_fill)
+        env.columns_to_fill = set()
+
         while len(columns_to_fill) != 0:
     
             for idx, column_idx in enumerate(columns_to_fill):

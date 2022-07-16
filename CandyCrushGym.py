@@ -41,16 +41,15 @@ class CandyCrushGym:
         if direction == 0:
             y_swap += -1
         # down
-        elif direction == 1: 
+        elif direction == 2: 
             y_swap += 1
         # right 
-        elif direction == 2:
+        elif direction == 1:
             x_swap += 1
         # left 
         elif direction == 3:
             x_swap += -1
 
-        print(f"{action}: ({x}, {y}) ({x_swap}, {y_swap}) -> {self.isValidIndex(x,y) and self.isValidIndex(x_swap, y_swap)}")
         return self.isValidIndex(x,y) and self.isValidIndex(x_swap, y_swap)
            
 
@@ -73,10 +72,10 @@ class CandyCrushGym:
         if direction == 0:
             y_swap += -1
         # down
-        elif direction == 1: 
+        elif direction == 2: 
             y_swap += 1
         # right 
-        elif direction == 2:
+        elif direction == 1:
             x_swap += 1
         # left 
         elif direction == 3:
@@ -117,53 +116,53 @@ class CandyCrushGym:
 
     
     def step_display(self, action):
+        pass
+        # if not self.isValidAction(action):
+        #     raise ValueError("Invalid action")
+
+        # fieldID = action // self.NUM_DIRECTIONS
+
+        # direction = action % self.NUM_DIRECTIONS
+
+        # x = fieldID // self.FIELD_SIZE
+        # y = fieldID % self.FIELD_SIZE
+
+        # # Swap candy
+        # x_swap = x # attention: numpy x->y are swapped
+        # y_swap = y # attention: numpy x->y are swapped
+        # # top
+        # if direction == 0:
+        #     y_swap += -1
+        # # down
+        # elif direction == 2: 
+        #     y_swap += 1
+        # # right 
+        # elif direction == 1:
+        #     x_swap += 1
+        # # left 
+        # elif direction == 3:
+        #     x_swap += -1
         
-        if not self.isValidAction(action):
-            raise ValueError("Invalid action")
 
-        fieldID = action // self.NUM_DIRECTIONS
+        # # swap
+        # tmp = self.state[y,x]
+        # self.state[y,x] = self.state[y_swap, x_swap]
+        # self.state[y_swap, x_swap] = tmp
 
-        direction = action % self.NUM_DIRECTIONS
+        # reward = self.react(x,y, x_swap, y_swap)
 
-        x = fieldID // self.FIELD_SIZE
-        y = fieldID % self.FIELD_SIZE
+        # if reward == 0:
 
-        # Swap candy
-        x_swap = x # attention: numpy x->y are swapped
-        y_swap = y # attention: numpy x->y are swapped
-        # top
-        if direction == 0:
-            y_swap += -1
-        # down
-        elif direction == 1: 
-            y_swap += 1
-        # right 
-        elif direction == 2:
-            x_swap += 1
-        # left 
-        elif direction == 3:
-            x_swap += -1
+        #     # swap again -> undo previous swap
+        #     tmp = self.state[y,x]
+        #     self.state[y,x] = self.state[y_swap, x_swap]
+        #     self.state[y_swap, x_swap] = tmp
         
-
-        # swap
-        tmp = self.state[y,x]
-        self.state[y,x] = self.state[y_swap, x_swap]
-        self.state[y_swap, x_swap] = tmp
-
-        reward = self.react(x,y, x_swap, y_swap)
-
-        if reward == 0:
-
-            # swap again -> undo previous swap
-            tmp = self.state[y,x]
-            self.state[y,x] = self.state[y_swap, x_swap]
-            self.state[y_swap, x_swap] = tmp
+        # columns_to_fill = self.columns_to_fill
         
-        columns_to_fill = self.columns_to_fill
-        
-        self.columns_to_fill = set()
+        # self.columns_to_fill = set()
      
-        return self.state, reward, columns_to_fill
+        # return self.state, reward, columns_to_fill
     
     def react(self,x,y, x_swap, y_swap):
         
