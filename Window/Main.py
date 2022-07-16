@@ -5,6 +5,10 @@ sys.path.append("../")
 from CandyCrushGym import *
 
 import time 
+
+from tkinter.constants import *
+import tkinter as tk
+
 def main():
 
     env = CandyCrushGym()
@@ -12,8 +16,15 @@ def main():
     win = Window(env)
     
     
-   
-    time.sleep(1)
+    win.update_game_field()
+
+    # arrow_top_img = tk.PhotoImage(file="./Images/Arrows/Top.png")
+    # arrow_down_img = tk.PhotoImage(file="./Images/Arrows/Down.png")
+    # arrow_right_img = tk.PhotoImage(file="./Images/Arrows/right.png")
+    # arrow_left_img = tk.PhotoImage(file="./Images/Arrows/right.png")
+
+    # win.display.canvas.create_image(60, 90, image=image, anchor=NW)
+    # time.sleep(10)
 
     for i in range(100):
 
@@ -24,13 +35,54 @@ def main():
             print("try: ", action)
             reward = 0
             if env.isValidAction(action):
+
+                
+                #
+                # Display arrow
+                #
+
+                fieldID = action // env.NUM_DIRECTIONS
+
+                direction = action % env.NUM_DIRECTIONS
+
+                x = fieldID // env.FIELD_SIZE
+                y = fieldID % env.FIELD_SIZE
+
+                # top
+                if direction == 0:
+                    img = tk.PhotoImage(file="./Images/Arrows/Top.png")
+                # down
+                elif direction == 1:
+                    img = tk.PhotoImage(file="./Images/Arrows/Down.png")
+                # right
+                elif direction == 2:
+                    img = tk.PhotoImage(file="./Images/Arrows/Right.png")
+                # left
+                else:
+                    img = tk.PhotoImage(file="./Images/Arrows/Left.png")
+
+                # top or down
+                if direction == 0 or direction == 1:
+                    win.display.canvas.create_image(x * win.display.image_size , y * win.display.image_size + win.display.image_size//2, image=img, anchor=NW)
+                
+                # right or left
+                else:
+                    win.display.canvas.create_image(x * win.display.image_size + win.display.image_size//2, y * win.display.image_size, image=img, anchor=NW)
+
+                time.sleep(1.5)
+                img = None
+
                 state, reward, columns_to_fill = env.step_display(action)
 
-            if reward != 0:
-                break
+                win.update_game_field()
+                win.update_plots(reward)
+                print(reward)
+                time.sleep(1.5)
+
+                break 
         
-        print(reward)
-        win.update_plots(reward)
+        
+        
 
         columns_to_fill = list(columns_to_fill)
         while len(columns_to_fill) != 0:
