@@ -139,7 +139,7 @@ def display_execute_action(action, env, window):
 
 def main():
 
-    env = CandyCrushGym()
+    env = CandyCrushGym(100)
     env.reset()
     window = Window(env)
     
