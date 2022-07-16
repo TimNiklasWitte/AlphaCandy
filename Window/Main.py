@@ -9,109 +9,99 @@ import time
 from tkinter.constants import *
 import tkinter as tk
 
-def main():
+show_arrow_time = 1
+show_swap_time = 1
+show_empty_time = 1
+drop_candy_time = 0.03
 
-    env = CandyCrushGym()
-    env.reset()
-    win = Window(env)
-    
-    
-    win.update_game_field()
+def display_execute_action(action, env, window):      
 
-    for i in range(100):
+        #
+        # Display arrow
+        #
 
-        win.update_game_field()
-        
-        while True:
-            action = np.random.randint(0, 255)
-            
-            reward = 0
-            if env.isValidAction(action):
+        fieldID = action // env.NUM_DIRECTIONS
 
+        direction = action % env.NUM_DIRECTIONS
+
+        x = fieldID // env.FIELD_SIZE
+        y = fieldID % env.FIELD_SIZE
+
+        # top
+        if direction == 0:
+            img = tk.PhotoImage(file="./Images/Arrows/Top.png")
+        # right
+        elif direction == 1:
+            img = tk.PhotoImage(file="./Images/Arrows/Right.png")
+        # down
+        elif direction == 2:
+            img = tk.PhotoImage(file="./Images/Arrows/Down.png")
+        # left
+        else:
+            img = tk.PhotoImage(file="./Images/Arrows/Left.png")
+
+        # top or down
+        if direction == 0 or direction == 2:
+            window.display.canvas.create_image(x * window.display.image_size , y * window.display.image_size, image=img, anchor=NW)
                 
-                #
-                # Display arrow
-                #
+        # right or left
+        else:
+            window.display.canvas.create_image(x * window.display.image_size, y * window.display.image_size, image=img, anchor=NW)
 
-                fieldID = action // env.NUM_DIRECTIONS
+        time.sleep(show_arrow_time)
+        img = None
 
-                direction = action % env.NUM_DIRECTIONS
+        #
+        # Swap
+        #
 
-                x = fieldID // env.FIELD_SIZE
-                y = fieldID % env.FIELD_SIZE
+        # Swap candy
+        x_swap = x # attention: numpy x->y are swapped
+        y_swap = y # attention: numpy x->y are swapped
+        # top
+        if direction == 0:
+            y_swap += -1
+        # down
+        elif direction == 2: 
+            y_swap += 1
+        # right 
+        elif direction == 1:
+            x_swap += 1
+        # left 
+        elif direction == 3:
+            x_swap += -1
 
-                print(f"x: {x} y: {y}")
+        # swap
+        tmp = env.state[y,x]
+        env.state[y,x] = env.state[y_swap, x_swap]
+        env.state[y_swap, x_swap] = tmp
 
-                # top
-                if direction == 0:
-                    img = tk.PhotoImage(file="./Images/Arrows/Top.png")
-                # right
-                elif direction == 1:
-                    img = tk.PhotoImage(file="./Images/Arrows/Right.png")
-                # down
-                elif direction == 2:
-                    img = tk.PhotoImage(file="./Images/Arrows/Down.png")
-                # left
-                else:
-                    img = tk.PhotoImage(file="./Images/Arrows/Left.png")
+        window.update_game_field()
+        time.sleep(show_swap_time)
 
-                # top or down
-                if direction == 0 or direction == 2:
-                    win.display.canvas.create_image(x * win.display.image_size , y * win.display.image_size - win.display.image_size//2, image=img, anchor=NW)
-                
-                # right or left
-                else:
-                    win.display.canvas.create_image(x * win.display.image_size + win.display.image_size//2, y * win.display.image_size, image=img, anchor=NW)
+        #
+        # React
+        #
+        reward = env.react(x,y, x_swap, y_swap)
+     
+        if reward == 0:
+            tmp = env.state[y,x]
+            env.state[y,x] = env.state[y_swap, x_swap]
+            env.state[y_swap, x_swap] = tmp
 
-                time.sleep(1)
-                img = None
+            window.update_plots(reward)
+            window.update_game_field()
 
-                #
-                # Swap
-                #
-
-                # Swap candy
-                x_swap = x # attention: numpy x->y are swapped
-                y_swap = y # attention: numpy x->y are swapped
-                # top
-                if direction == 0:
-                    y_swap += -1
-                # down
-                elif direction == 2: 
-                    y_swap += 1
-                # right 
-                elif direction == 1:
-                    x_swap += 1
-                # left 
-                elif direction == 3:
-                    x_swap += -1
-
-                # swap
-                tmp = env.state[y,x]
-                env.state[y,x] = env.state[y_swap, x_swap]
-                env.state[y_swap, x_swap] = tmp
-
-
-                win.update_game_field()
-                time.sleep(1)
-
-                reward = env.react(x,y, x_swap, y_swap)
-                #state, reward, columns_to_fill = env.step_display(action)
-
-                if reward == 0:
-                    tmp = env.state[y,x]
-                    env.state[y,x] = env.state[y_swap, x_swap]
-                    env.state[y_swap, x_swap] = tmp
-
-                win.update_game_field()
-                win.update_plots(reward)
-                print(reward)
-                time.sleep(1)
-
-                break 
+            return 
         
-        
-        
+        window.update_game_field()
+        window.update_plots(reward)
+     
+        time.sleep(show_empty_time)
+
+        #
+        # Fill 
+        #
 
         columns_to_fill = list(env.columns_to_fill)
         env.columns_to_fill = set()
@@ -132,30 +122,45 @@ def main():
                             candy = env.state[x - 1, column_idx]
                             env.state[x - 1, column_idx] = -1
         
-                        #win.display.canvas.move(win.display.candies[column_idx*env.FIELD_SIZE + x], x * 60, 0)
-
                         env.state[x, column_idx] = candy
                         
+                        time.sleep(drop_candy_time)
 
-                        time.sleep(0.03)
-
-                        win.update_game_field()
-                        win.display.previous_state[x, column_idx] = candy
-                        #
+                        window.update_game_field()
+                        window.display.previous_state[x, column_idx] = candy
+                        
 
                 if done:
                     columns_to_fill.pop(idx)
 
-        print(env.state)
-        win.update_game_field()
+        window.update_game_field()
+
+def main():
+
+    env = CandyCrushGym()
+    env.reset()
+    window = Window(env)
     
+    
+    window.update_game_field()
+
+    for i in range(100):
+
+        window.update_game_field()
+        
+        while True:
+            action = np.random.randint(0, 255)
+            
+            reward = 0
+            if env.isValidAction(action):
+                break 
+        
+        display_execute_action(action, env, window)
 
     
-    # y*self.env.FIELD_SIZE + x
-
-    #
-    #win.update_game_field()
     
+
+
   
 
 
