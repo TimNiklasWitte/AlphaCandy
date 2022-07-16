@@ -1,9 +1,18 @@
 from matplotlib.pyplot import yscale
 import numpy as np
 
-class CandyCrushGym:
+import gym
+from gym import spaces
 
-    def __init__(self):
+class CandyCrushGym(gym.Env):
+
+    metadata = {'render.modes': ['human']}
+
+    def __init__(self, idx):
+
+        super(CandyCrushGym, self).__init__()
+
+        np.random.seed(idx) # <- IMPORTANT: seed every env
 
         self.FIELD_SIZE = 8
         self.NUM_DIRECTIONS = 4
@@ -13,6 +22,12 @@ class CandyCrushGym:
         self.COLOR_BOMB_CANDY_ID = 25
 
         self.columns_to_fill = set()
+
+        self.action_space = spaces.Discrete(self.FIELD_SIZE * self.FIELD_SIZE * self.NUM_DIRECTIONS)
+        self.observation_space = spaces.Box(
+            low=0, high=1, shape=(self.FIELD_SIZE, self.FIELD_SIZE), dtype=np.int8
+        )
+
 
         self.reset()
 
@@ -112,7 +127,7 @@ class CandyCrushGym:
         
         self.columns_to_fill = set()
      
-        return self.state, reward
+        return self.state, reward, False, {}
 
     def react(self,x,y, x_swap, y_swap):
         
@@ -937,10 +952,21 @@ class CandyCrushGym:
         
         return 0
 
-    @property
-    def observation_space_shape(self):
-        return (self.FIELD_SIZE, self.FIELD_SIZE)
+    def render(self, mode='human', close=False):
+        pass
+
+    def take_action(self, action):
+        pass
+
+    def get_reward(self):
+        """ Reward is given for XY. """
     
-    @property
-    def action_space_n(self):
-        return self.FIELD_SIZE * self.FIELD_SIZE * self.NUM_DIRECTIONS
+        return 0
+
+    # @property
+    # def observation_space_shape(self):
+    #     return (self.FIELD_SIZE, self.FIELD_SIZE)
+    
+    # @property
+    # def action_space_n(self):
+    #     return self.FIELD_SIZE * self.FIELD_SIZE * self.NUM_DIRECTIONS

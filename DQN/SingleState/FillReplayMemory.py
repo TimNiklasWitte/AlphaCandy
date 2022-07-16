@@ -4,8 +4,79 @@ from CandyCrushGym import *
 
 import tqdm
 
-def main():
 
+import gym
+
+def sample_actions(num_actions):
+
+    actions = []
+    for i in range(num_actions):
+
+        while True:
+            action = np.random.randint(0, 255)
+
+            fieldID = action // 4
+
+            direction = action % 4
+
+            x = fieldID // 8
+            y = fieldID % 8
+
+            # Swap candy
+            x_swap = x # attention: numpy x->y are swapped
+            y_swap = y # attention: numpy x->y are swapped
+            # top
+            if direction == 0:
+                y_swap += -1
+            # down
+            elif direction == 2: 
+                y_swap += 1
+            # right 
+            elif direction == 1:
+                x_swap += 1
+            # left 
+            elif direction == 3:
+                x_swap += -1
+
+            if isValidIndex(x,y) and isValidIndex(x_swap, y_swap):
+                break
+        
+    
+        actions.append(action)
+
+    return np.array(actions)
+
+def isValidIndex(x, y):
+        if 8 <= x or 8 <= y or x < 0 or y < 0:
+            return False
+        return True
+
+def main():
+    
+    envs = gym.vector.AsyncVectorEnv([
+            lambda: CandyCrushGym(100),
+            lambda: CandyCrushGym(200),
+            lambda: CandyCrushGym(300),
+            lambda: CandyCrushGym(400)
+        ])
+
+    actions = sample_actions(4)
+
+    print(actions)
+    envs.step(actions)
+    
+   
+    return 
+    
+    # print("here")
+    # state1, state2, state3 = envs.reset()
+
+    # print(state1)
+    # print(state2)
+    # print(state3)
+    #print(envs.observation_space)
+
+    return 
     env = CandyCrushGym()
 
     capacity = 2500000
