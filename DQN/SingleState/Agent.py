@@ -27,11 +27,61 @@ class Agent:
         self.replay_memory = ReplayMemory(capacity=2500000, input_dims=input_dims)
 
         self.q_net = DDDQN(num_actions)
-        self.q_net.build((self.batch_size, *input_dims))
+        self.q_net.build((input_dims))
 
         self.target_net = DDDQN(num_actions)
-        self.target_net.build((self.batch_size, *input_dims))
+        self.target_net.build((input_dims))
+
+   
         self.update_target()
+
+    def isValidIndex(self, x, y):
+        if 8 <= x or 8 <= y or x < 0 or y < 0:
+            return False
+        return True
+
+    def sample_actions(self, num_actions):
+
+        actions = []
+        for i in range(num_actions):
+
+            while True:
+                action = np.random.randint(0, 255)
+
+                if self.isValidAction(action):
+                    break
+        
+    
+            actions.append(action)
+
+        return np.array(actions)
+
+    def isValidAction(self, action):
+
+        fieldID = action // 4
+
+        direction = action % 4
+
+        x = fieldID // 8
+        y = fieldID % 8
+
+        # Swap candy
+        x_swap = x # attention: numpy x->y are swapped
+        y_swap = y # attention: numpy x->y are swapped
+        # top
+        if direction == 0:
+            y_swap += -1
+        # down
+        elif direction == 2: 
+            y_swap += 1
+        # right 
+        elif direction == 1:
+            x_swap += 1
+        # left 
+        elif direction == 3:
+            x_swap += -1
+
+        return self.isValidIndex(x,y) and self.isValidIndex(x_swap, y_swap)
 
     def select_action(self, state):
         """Based on the game state (see parameter) a action will be choosen.
@@ -45,18 +95,39 @@ class Agent:
         """
 
         # Exploration
-        if np.random.random() < self.strategy.get_exploration_rate():
-            return np.random.randint(0, self.num_actions)
+        if False:#np.random.random() < self.strategy.get_exploration_rate():
+          
+            return self.sample_actions(self.batch_size)
         # Exploitation
         else:
-            state = tf.one_hot(state, depth=26, axis=-1)
+            #state = tf.one_hot(state, depth=26, axis=-1)
             #print("here: ", state.shape)
-            # Add batch dim
-            state = np.expand_dims(state, axis=0)
 
+            field_size = state.shape[1]
+            
+            state = tf.reshape(state, shape=(self.batch_size, field_size*field_size))
+            state = tf.cast(state, dtype=tf.uint8)
+            
+            state = tf.one_hot(state, depth=26, axis=-1)
+            
+            state = tf.reshape(state, shape=(self.batch_size, field_size,field_size, 26))
+      
             # Select best action
+        
             actions = self.q_net(state)
-            return np.argmax(actions)
+          
+            actions = np.argmax(actions, axis=-1)
+            
+            for batch_idx in range(self.batch_size):
+                if not self.isValidAction(actions[batch_idx]):
+
+                    while True:
+                        action = np.random.randint(0, 255)
+                        if self.isValidAction(action):
+                            break
+                    actions[batch_idx] = action
+         
+            return actions
 
     def store_experience(self, state, action, next_state, reward):
         """Store a experience in the ReplayMemory.

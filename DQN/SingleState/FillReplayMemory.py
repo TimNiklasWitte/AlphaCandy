@@ -53,82 +53,74 @@ def isValidIndex(x, y):
 
 def main():
     
+    batch_size = 16
+    
     envs = gym.vector.AsyncVectorEnv([
             lambda: CandyCrushGym(100),
             lambda: CandyCrushGym(200),
             lambda: CandyCrushGym(300),
-            lambda: CandyCrushGym(400)
+            lambda: CandyCrushGym(400),
+            lambda: CandyCrushGym(500),
+            lambda: CandyCrushGym(600),
+            lambda: CandyCrushGym(700),
+            lambda: CandyCrushGym(800),
+            lambda: CandyCrushGym(900),
+            lambda: CandyCrushGym(1000),
+            lambda: CandyCrushGym(1100),
+            lambda: CandyCrushGym(1200),
+            lambda: CandyCrushGym(1300),
+            lambda: CandyCrushGym(1400),
+            lambda: CandyCrushGym(1500),
+            lambda: CandyCrushGym(1600),
         ])
-
-    actions = sample_actions(4)
-
-    print(actions)
-    envs.step(actions)
     
-   
-    return 
-    
-    # print("here")
-    # state1, state2, state3 = envs.reset()
-
-    # print(state1)
-    # print(state2)
-    # print(state3)
-    #print(envs.observation_space)
-
-    return 
-    env = CandyCrushGym()
-
     capacity = 2500000
     
     num_episodes = 1000
-    episode_len = 100
+    episode_len = 50
 
-    states = np.zeros((capacity, *env.observation_space_shape), dtype=np.int8)
-    actions = np.zeros(capacity, dtype=np.int8)
-    next_states = np.zeros((capacity, *env.observation_space_shape), dtype=np.int8)
-    rewards = np.zeros(capacity, dtype=np.float32)
+    idx = 0
+
+    field_shape = envs.observation_space.shape[1:] # ignore batch size
+    buff_states = np.zeros((capacity, *field_shape), dtype=np.int8)
+    buff_actions = np.zeros(capacity, dtype=np.int8)
+    buff_next_states = np.zeros((capacity, *field_shape), dtype=np.int8)
+    buff_rewards = np.zeros(capacity, dtype=np.float32)
     
-    i = 0
     for _ in tqdm.tqdm(range(num_episodes), position=0, leave=True):
-        state = env.reset()
+        states = envs.reset()
      
         for _ in range(episode_len):
-            
-            isValid = False 
-            reward = 0
-            action = -1
+            actions = sample_actions(batch_size)
 
-            while reward == 0:
+            next_states, rewards, _, _ = envs.step(actions)
 
-                while not isValid:
-                    action = np.random.randint(0, env.action_space_n)
-                    isValid = env.isValidAction(action)
+            for i in range(batch_size):
 
-                next_state, reward = env.step(action)
-
-                if reward == 0:
+                if rewards[i] == 0:
                     x = np.random.randint(0, 10)
                     if x == 0:
-                        break 
 
+                        buff_states[idx] = states[i]
+                        buff_actions[idx] = actions[i]
+                        buff_next_states[idx] = next_states[i]
+                        buff_rewards[idx] = rewards[i]
+
+                        idx+=1
                 else:
-                    break
-                
-                isValid = False 
+                    buff_states[idx] = states[i]
+                    buff_actions[idx] = actions[i]
+                    buff_next_states[idx] = next_states[i]
+                    buff_rewards[idx] = rewards[i]
 
-            states[i] = state 
-            actions[i] = action
-            next_states[i] = next_state
-            rewards[i] = reward
-
-            state = next_state
-            i += 1
+                    idx+=1
             
-    np.save(f"./ReplayMemoryData/states_{i}", states)
-    np.save(f"./ReplayMemoryData/actions_{i}", actions)
-    np.save(f"./ReplayMemoryData/next_states_{i}", next_states)
-    np.save(f"./ReplayMemoryData/rewards_{i}", rewards)
+            states = next_states
+
+    np.save(f"./ReplayMemoryData/states_{idx}", buff_states)
+    np.save(f"./ReplayMemoryData/actions_{idx}", buff_actions)
+    np.save(f"./ReplayMemoryData/next_states_{idx}", buff_next_states)
+    np.save(f"./ReplayMemoryData/rewards_{idx}", buff_rewards)
 
 
 if __name__ == "__main__":

@@ -10,14 +10,14 @@ class ReplayMemory:
         input_dims -- dimension of a game state (previous or current)
         """
         self.capacity = capacity
-        self.idx = 100000 + 1
+        self.idx = 183957 + 1
         self.idx_was_overflown = False
 
         # experience = state, action, next_state, reward
-        self.states = np.load("./ReplayMemoryData/states_100000.npy")#np.zeros((self.capacity, *input_dims), dtype=np.float32)
-        self.actions = np.load("./ReplayMemoryData/actions_100000.npy")#np.zeros(self.capacity, dtype=np.int32)
-        self.next_states = np.load("./ReplayMemoryData/next_states_100000.npy")#np.zeros((self.capacity, *input_dims), dtype=np.float32)
-        self.rewards = np.load("./ReplayMemoryData/rewards_100000.npy")#np.zeros(self.capacity, dtype=np.float32)
+        self.states = np.load(f"./ReplayMemoryData/states_{self.idx - 1}.npy")#np.zeros((self.capacity, *input_dims), dtype=np.float32)
+        self.actions = np.load(f"./ReplayMemoryData/actions_{self.idx - 1}.npy")#np.zeros(self.capacity, dtype=np.int32)
+        self.next_states = np.load(f"./ReplayMemoryData/next_states_{self.idx - 1}.npy")#np.zeros((self.capacity, *input_dims), dtype=np.float32)
+        self.rewards = np.load(f"./ReplayMemoryData/rewards_{self.idx - 1}.npy")#np.zeros(self.capacity, dtype=np.float32)
 
     def store_experience(self, state: np.array, action: int, next_state: np.array, reward: float):
         """Store a experience in the ReplayMemory.
@@ -66,10 +66,27 @@ class ReplayMemory:
   
         # A value shall not be sampled multiple times within a batch
         sampled_idxs = np.random.choice(max_mem, batch_size, replace=False, p=probs)
-
+        
         states = self.states[sampled_idxs]
         actions = self.actions[sampled_idxs]
-        next_state = self.next_states[sampled_idxs]
+        next_states = self.next_states[sampled_idxs]
         rewards = self.rewards[sampled_idxs]
 
-        return tf.one_hot(states, depth=26, axis=-1), actions, tf.one_hot(next_state, depth=26, axis=-1), rewards
+        # preprocess state
+        field_size = states.shape[1]
+        states = tf.reshape(states, shape=(16, field_size*field_size))
+        states = tf.cast(states, dtype=tf.uint8)
+            
+        states = tf.one_hot(states, depth=26, axis=-1)
+            
+        states = tf.reshape(states, shape=(16, field_size,field_size, 26))
+
+
+        next_states = tf.reshape(next_states, shape=(16, field_size*field_size))
+        next_states = tf.cast(next_states, dtype=tf.uint8)
+            
+        next_states = tf.one_hot(next_states, depth=26, axis=-1)
+            
+        next_states = tf.reshape(next_states, shape=(16, field_size,field_size, 26))
+
+        return states, actions, next_states, rewards

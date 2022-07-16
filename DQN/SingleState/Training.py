@@ -9,6 +9,7 @@ from CandyCrushGym import *
 
 def main():
 
+    batch_size = 16
 
     # Logging
     file_path = "test_logs/test"
@@ -18,13 +19,30 @@ def main():
     update = 250
 
     # Init gym
-    env = CandyCrushGym()
+    envs = gym.vector.AsyncVectorEnv([
+            lambda: CandyCrushGym(1000),
+            lambda: CandyCrushGym(2000),
+            lambda: CandyCrushGym(3000),
+            lambda: CandyCrushGym(4000),
+            lambda: CandyCrushGym(5000),
+            lambda: CandyCrushGym(6000),
+            lambda: CandyCrushGym(7000),
+            lambda: CandyCrushGym(8000),
+            lambda: CandyCrushGym(9000),
+            lambda: CandyCrushGym(10000),
+            lambda: CandyCrushGym(11000),
+            lambda: CandyCrushGym(12000),
+            lambda: CandyCrushGym(13000),
+            lambda: CandyCrushGym(14000),
+            lambda: CandyCrushGym(15000),
+            lambda: CandyCrushGym(16000),
+        ])
     
-   
-    agent = Agent(input_dims=(*env.observation_space_shape, 26),
-                   num_actions=env.action_space_n, batch_size=64)
+    
+    agent = Agent(input_dims=(*envs.observation_space.shape, 26),
+                   num_actions=255, batch_size=batch_size)
     agent.q_net.summary()
-
+ 
     # Start actual training
     with train_summary_writer.as_default():
 
@@ -32,44 +50,33 @@ def main():
 
 
             score = 0  # sum of rewards
-            rewards = []
+            rewards_list = []
 
         
-            state = env.reset()#, depth=25, axis=-1)
+            states = envs.reset()
             for i in range(50):
+        
+                actions = agent.select_action(states)
+                next_states, rewards, _, _ = envs.step(actions)
                 
-                isValid = False 
-                reward = 0
-                action = -1
 
-                while reward == 0:
+                for batch_idx in range(batch_size):
 
-                    while not isValid:
-                        action = np.random.randint(0, env.action_space_n)
-                        isValid = env.isValidAction(action)
-
-                    next_state, reward = env.step(action)
-
-                    if reward == 0:
+                    if rewards[batch_idx] == 0:
                         x = np.random.randint(0, 10)
                         if x == 0:
-                            break 
-
+                            agent.store_experience(states[batch_idx], actions[batch_idx], next_states[batch_idx], rewards[batch_idx])
+                     
                     else:
-                        break
-                
-                    isValid = False 
+                        agent.store_experience(states[batch_idx], actions[batch_idx], next_states[batch_idx], rewards[batch_idx])
 
-                #next_state, reward = env.step(action)
-                #next_state = tf.one_hot(next_state, depth=25, axis=-1)
-                agent.store_experience(state, action, next_state, reward)
-             
-                state = next_state
+    
+                states = next_states
                 agent.train_step()
 
-                score += reward
+                score += np.mean(rewards)
 
-                rewards.append(reward)
+                rewards_list.append(np.mean(rewards))
            
 
             # Reduce epsilon after each episode
@@ -83,15 +90,15 @@ def main():
             if episode % 250 == 0:
                 agent.q_net.save_weights(f"./saved_models/trained_weights_episode_{episode}", save_format="tf")
 
-            tf.summary.scalar(f"Average reward (DQN_SingleState)", np.mean(rewards), step=episode)
+            tf.summary.scalar(f"Average reward (DQN_SingleState)", np.mean(rewards_list), step=episode)
             tf.summary.scalar(f"Score (DQN_SingleState)", score, step=episode)
             tf.summary.scalar(f"Epsilon (EpsilonGreedyStrategy) (DQN_SingleState)", agent.strategy.get_exploration_rate(), step=episode)
     
 
-            print(f"  Episode: {episode}")
-            print(f"  Epsilon: {round(agent.strategy.get_exploration_rate(), 2)}")
-            print(f"    Score: {round(score, 2)}")
-            print(f"Avg Score: {round(np.mean(rewards), 2)}")
+            print(f"   Episode: {episode}")
+            print(f"   Epsilon: {round(agent.strategy.get_exploration_rate(), 2)}")
+            print(f"     Score: {round(score, 2)}")
+            print(f"Avg Reward: {round(np.mean(rewards_list), 2)}")
             print("------------------------")
 
 
