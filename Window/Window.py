@@ -20,7 +20,7 @@ class Window:
     def window_loop(self):
 
         self.root = tk.Tk()
-
+        self.root.title("AlphaCandy")
   
         self.display = Display(master=self.root, env=self.env)
 

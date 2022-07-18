@@ -144,6 +144,10 @@ class Display(tk.Frame):
         state_value_plt = self.fig.add_subplot(333)
         state_value_plt.set_title("State value")
 
+        value = np.random.random()
+        state_value_plt.bar([1], [value], align='center')
+        state_value_plt.axes.get_xaxis().set_visible(False)
+        state_value_plt.grid(True)
 
         #
         # Action: down
