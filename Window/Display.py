@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 
 import numpy as np
+import sys
 
 class Display(tk.Frame):
 
@@ -20,7 +21,7 @@ class Display(tk.Frame):
         self.window_height = env.FIELD_SIZE * self.image_size + 250
         self.window_width = env.FIELD_SIZE * self.image_size + 1000
 
-        self.root_img_path = "./Images"
+        self.root_img_path = sys.path[0]+"/Images"
         self.env = env
 
         # Game window
