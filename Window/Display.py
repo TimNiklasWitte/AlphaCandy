@@ -17,7 +17,7 @@ class Display(tk.Frame):
         # Window contains also plots
 
         self.image_size = 60
-        self.window_height = env.FIELD_SIZE * self.image_size
+        self.window_height = env.FIELD_SIZE * self.image_size + 250
         self.window_width = env.FIELD_SIZE * self.image_size + 1000
 
         self.root_img_path = "./Images"
@@ -30,7 +30,7 @@ class Display(tk.Frame):
         self.canvas.pack(side=LEFT)
 
         # Plots
-        self.fig = Figure(figsize=(5, 5), dpi=100)
+        self.fig = Figure(figsize=(6, 6), dpi=100)
         self.canvas_plot = FigureCanvasTkAgg(self.fig, master=master)
         self.canvas_plot.get_tk_widget().pack(side=RIGHT, fill=tk.BOTH, expand=True)
 
@@ -108,9 +108,63 @@ class Display(tk.Frame):
 
     def update_plots(self, reward):
 
+
+        noise = np.random.random(256)
+
+        # softmax
+        e_x = np.exp(noise - np.max(noise))
+        probs = e_x / e_x.sum(axis=0)
+
+        action_top = np.reshape(probs[0::4], newshape=(8,8))
+        action_right = np.reshape(probs[1::4], newshape=(8,8))
+        action_down = np.reshape(probs[2::4], newshape=(8,8))
+        action_left = np.reshape(probs[3::4], newshape=(8,8))
+
         self.fig.clf()
 
-        collected_rewards_plt = self.fig.add_subplot(121)
+        #
+        # Action: Top
+        #
+        prob_top_plt = self.fig.add_subplot(331)
+        prob_top_plt.set_title("Action: Top")
+        img = prob_top_plt.imshow(action_top, cmap='RdBu')
+        self.fig.colorbar(img)
+
+        #
+        # Action: Right
+        #
+        prob_right_plt = self.fig.add_subplot(332)
+        prob_right_plt.set_title("Action: Right")
+        img = prob_right_plt.imshow(action_right, cmap='RdBu')
+        self.fig.colorbar(img)
+
+        #
+        # State value
+        #
+        state_value_plt = self.fig.add_subplot(333)
+        state_value_plt.set_title("State value")
+
+
+        #
+        # Action: down
+        #
+        prob_down_plt = self.fig.add_subplot(334)
+        prob_down_plt.set_title("Action: Down")
+        img = prob_down_plt.imshow(action_down, cmap='RdBu')
+        self.fig.colorbar(img)
+
+        #
+        # Action: left
+        #
+        prob_left_plt = self.fig.add_subplot(335)
+        prob_left_plt.set_title("Action: Left")
+        img = prob_left_plt.imshow(action_left, cmap='RdBu')
+        self.fig.colorbar(img)
+
+        #
+        # Received rewards
+        #
+        collected_rewards_plt = self.fig.add_subplot(336)
 
         self.steps.append(self.step_cnt)
         self.collected_rewards.append(reward)
@@ -130,4 +184,5 @@ class Display(tk.Frame):
         collected_rewards_plt.axhline(mean_collected_rewards_part, color='r', linestyle="--", label="Mean")
         collected_rewards_plt.legend(loc='lower right')
 
+        self.fig.tight_layout()
         self.canvas_plot.draw()

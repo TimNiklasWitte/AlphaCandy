@@ -9,6 +9,8 @@ import time
 from tkinter.constants import *
 import tkinter as tk
 
+import numpy as np
+
 show_arrow_time = 1
 show_swap_time = 1
 show_empty_time = 1
