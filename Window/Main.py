@@ -1,7 +1,7 @@
 from Window import *
 
 import sys
-sys.path.append("../")
+sys.path.append("../AlphaCandy")
 from CandyCrushGym import *
 
 import time 
@@ -31,16 +31,16 @@ def display_execute_action(action, env, window):
 
         # top
         if direction == 0:
-            img = tk.PhotoImage(file="./Images/Arrows/Top.png")
+            img = tk.PhotoImage(file=sys.path[0]+"/Images/Arrows/Top.png")
         # right
         elif direction == 1:
-            img = tk.PhotoImage(file="./Images/Arrows/Right.png")
+            img = tk.PhotoImage(file=sys.path[0]+"/Images/Arrows/Right.png")
         # down
         elif direction == 2:
-            img = tk.PhotoImage(file="./Images/Arrows/Down.png")
+            img = tk.PhotoImage(file=sys.path[0]+"/Images/Arrows/Down.png")
         # left
         else:
-            img = tk.PhotoImage(file="./Images/Arrows/Left.png")
+            img = tk.PhotoImage(file=sys.path[0]+"/Images/Arrows/Left.png")
 
         # top or down
         if direction == 0 or direction == 2:
