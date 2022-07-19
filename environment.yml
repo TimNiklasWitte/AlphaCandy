@@ -1,0 +1,15 @@
+name: AlphaCandy
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.7
+  - numpy
+  - matplotlib
+  - pip
+  - tk
+  - tqdm
+  - gym
+  - pip:
+      - tensorboard
+      - tensorflow
