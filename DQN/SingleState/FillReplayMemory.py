@@ -1,9 +1,10 @@
 import sys
-sys.path.append("../..")
+# sys.path.append("../..")
+sys.path.append("../AlphaCandy")
 from CandyCrushGym import *
 
 import tqdm
-
+import os
 
 import gym
 
@@ -116,6 +117,9 @@ def main():
                     idx+=1
             
             states = next_states
+
+    filename = "./ReplayMemoryData/"
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
 
     np.save(f"./ReplayMemoryData/states_{idx}", buff_states)
     np.save(f"./ReplayMemoryData/actions_{idx}", buff_actions)

@@ -3,7 +3,8 @@ import numpy as np
 from Agent import *
 
 import sys
-sys.path.append("../..")
+# sys.path.append("../..")
+sys.path.append("../AlphaCandy")
 from CandyCrushGym import *
 
 
