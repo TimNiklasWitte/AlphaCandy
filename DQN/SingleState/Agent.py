@@ -20,7 +20,7 @@ class Agent:
         self.tau = 0.01
 
         self.num_actions = num_actions
-
+        self.input_dims = input_dims
         self.batch_size = batch_size
 
         self.strategy = EpsilonGreedyStrategy(start=1.0, end=0.05, decay=0.999)
@@ -32,11 +32,11 @@ class Agent:
         self.target_net = DDDQN(num_actions)
         self.target_net.build((input_dims))
 
-   
+
         self.update_target()
 
     def isValidIndex(self, x, y):
-        if 8 <= x or 8 <= y or x < 0 or y < 0:
+        if self.input_dims[1] <= x or self.input_dims[2] <= y or x < 0 or y < 0:
             return False
         return True
 
@@ -62,8 +62,8 @@ class Agent:
 
         direction = action % 4
 
-        x = fieldID // 8
-        y = fieldID % 8
+        x = fieldID // self.input_dims[1]
+        y = fieldID % self.input_dims[2]
 
         # Swap candy
         x_swap = x # attention: numpy x->y are swapped
@@ -97,7 +97,7 @@ class Agent:
         # Exploration
         if False:#np.random.random() < self.strategy.get_exploration_rate():
           
-            return self.sample_actions(self.batch_size)
+            return self.sample_actions(self.batch_size, self.input_dims[1])
         # Exploitation
         else:
             #state = tf.one_hot(state, depth=26, axis=-1)
@@ -107,11 +107,11 @@ class Agent:
             
             state = tf.reshape(state, shape=(self.batch_size, field_size*field_size))
             state = tf.cast(state, dtype=tf.uint8)
-            
+
             state = tf.one_hot(state, depth=26, axis=-1)
-            
+
             state = tf.reshape(state, shape=(self.batch_size, field_size,field_size, 26))
-      
+
             # Select best action
         
             actions = self.q_net(state)

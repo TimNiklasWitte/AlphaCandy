@@ -10,7 +10,7 @@ class ReplayMemory:
         input_dims -- dimension of a game state (previous or current)
         """
         self.capacity = capacity
-        self.idx = 183957 + 1
+        self.idx = 245051 + 1
         self.idx_was_overflown = False
 
         # experience = state, action, next_state, reward

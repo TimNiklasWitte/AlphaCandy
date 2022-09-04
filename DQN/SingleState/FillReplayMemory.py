@@ -8,7 +8,7 @@ import os
 
 import gym
 
-def sample_actions(num_actions):
+def sample_actions(num_actions, field_size=8):
 
     actions = []
     for i in range(num_actions):
@@ -20,8 +20,8 @@ def sample_actions(num_actions):
 
             direction = action % 4
 
-            x = fieldID // 8
-            y = fieldID % 8
+            x = fieldID // field_size
+            y = fieldID % field_size
 
             # Swap candy
             x_swap = x # attention: numpy x->y are swapped
@@ -39,7 +39,7 @@ def sample_actions(num_actions):
             elif direction == 3:
                 x_swap += -1
 
-            if isValidIndex(x,y) and isValidIndex(x_swap, y_swap):
+            if isValidIndex(x,y, field_size) and isValidIndex(x_swap, y_swap, field_size):
                 break
         
     
@@ -47,32 +47,32 @@ def sample_actions(num_actions):
 
     return np.array(actions)
 
-def isValidIndex(x, y):
-        if 8 <= x or 8 <= y or x < 0 or y < 0:
+def isValidIndex(x, y, field_size=8):
+        if field_size <= x or field_size <= y or x < 0 or y < 0:
             return False
         return True
 
-def main():
+def main(field_size=8, num_elements=6):
     
     batch_size = 16
     
     envs = gym.vector.AsyncVectorEnv([
-            lambda: CandyCrushGym(100),
-            lambda: CandyCrushGym(200),
-            lambda: CandyCrushGym(300),
-            lambda: CandyCrushGym(400),
-            lambda: CandyCrushGym(500),
-            lambda: CandyCrushGym(600),
-            lambda: CandyCrushGym(700),
-            lambda: CandyCrushGym(800),
-            lambda: CandyCrushGym(900),
-            lambda: CandyCrushGym(1000),
-            lambda: CandyCrushGym(1100),
-            lambda: CandyCrushGym(1200),
-            lambda: CandyCrushGym(1300),
-            lambda: CandyCrushGym(1400),
-            lambda: CandyCrushGym(1500),
-            lambda: CandyCrushGym(1600),
+            lambda: CandyCrushGym(100, field_size, num_elements),
+            lambda: CandyCrushGym(200, field_size, num_elements),
+            lambda: CandyCrushGym(300, field_size, num_elements),
+            lambda: CandyCrushGym(400, field_size, num_elements),
+            lambda: CandyCrushGym(500, field_size, num_elements),
+            lambda: CandyCrushGym(600, field_size, num_elements),
+            lambda: CandyCrushGym(700, field_size, num_elements),
+            lambda: CandyCrushGym(800, field_size, num_elements),
+            lambda: CandyCrushGym(900, field_size, num_elements),
+            lambda: CandyCrushGym(1000, field_size, num_elements),
+            lambda: CandyCrushGym(1100, field_size, num_elements),
+            lambda: CandyCrushGym(1200, field_size, num_elements),
+            lambda: CandyCrushGym(1300, field_size, num_elements),
+            lambda: CandyCrushGym(1400, field_size, num_elements),
+            lambda: CandyCrushGym(1500, field_size, num_elements),
+            lambda: CandyCrushGym(1600, field_size, num_elements),
         ])
     
     capacity = 2500000
@@ -92,7 +92,7 @@ def main():
         states = envs.reset()
      
         for _ in range(episode_len):
-            actions = sample_actions(batch_size)
+            actions = sample_actions(batch_size, field_size)
 
             next_states, rewards, _, _ = envs.step(actions)
 
@@ -129,6 +129,6 @@ def main():
 
 if __name__ == "__main__":
     try:
-        main()
+        main(field_size=8, num_elements=6)
     except KeyboardInterrupt:
         print("KeyboardInterrupt received")

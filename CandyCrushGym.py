@@ -8,16 +8,16 @@ class CandyCrushGym(gym.Env):
 
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, idx):
+    def __init__(self, idx, field_size=8, num_elements=6, reward_per_hit=0.25):
 
         super(CandyCrushGym, self).__init__()
 
         np.random.seed(idx) # <- IMPORTANT: seed every env
 
-        self.FIELD_SIZE = 8
+        self.FIELD_SIZE = field_size
         self.NUM_DIRECTIONS = 4
-        self.NUM_ELEMENTS = 7
-        self.REWARD_PER_HIT = 0.25
+        self.NUM_ELEMENTS = num_elements
+        self.REWARD_PER_HIT = reward_per_hit
 
         self.COLOR_BOMB_CANDY_ID = 25
 
@@ -33,7 +33,7 @@ class CandyCrushGym(gym.Env):
 
     def reset(self):
 
-        rnds = np.random.randint(1, self.NUM_ELEMENTS, size=self.FIELD_SIZE*self.FIELD_SIZE, dtype=np.int8)
+        rnds = np.random.randint(1, self.NUM_ELEMENTS+1, size=self.FIELD_SIZE*self.FIELD_SIZE, dtype=np.int8)
         self.state = np.reshape(rnds, newshape=(self.FIELD_SIZE,self.FIELD_SIZE))
 
         #self.state = np.array([[4,4,4,4,4],[1,2,12,0,4],[4,5,-1,-1,-1], [4,0,0,0,4], [0,0,0,0,5]])
@@ -119,7 +119,7 @@ class CandyCrushGym(gym.Env):
                         
                         if self.state[i,column_idx] == -1:
                             if i - 1 < 0:
-                                x = np.random.randint(1, self.NUM_ELEMENTS)
+                                x = np.random.randint(1, self.NUM_ELEMENTS+1)
                             else:
                                 x = self.state[i - 1,column_idx]
                                 self.state[i - 1,column_idx] = -1
