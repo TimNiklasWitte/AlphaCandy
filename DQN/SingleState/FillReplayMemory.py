@@ -1,14 +1,14 @@
 import sys
-# sys.path.append("../..")
-sys.path.append("../AlphaCandy")
+sys.path.append("../..")
+#sys.path.append("../AlphaCandy")
 from CandyCrushGym import *
 
 import tqdm
 import os
-
+import argparse
 import gym
 
-def sample_actions(num_actions, field_size=8):
+def sample_actions(num_actions, field_size):
 
     actions = []
     for i in range(num_actions):
@@ -47,13 +47,36 @@ def sample_actions(num_actions, field_size=8):
 
     return np.array(actions)
 
-def isValidIndex(x, y, field_size=8):
+def isValidIndex(x, y, field_size):
         if field_size <= x or field_size <= y or x < 0 or y < 0:
             return False
         return True
 
-def main(field_size=8, num_elements=6):
+
+def checkFieldSize(size: str):
+    size = int(size)
+    if size <= 4:
+        raise argparse.ArgumentTypeError("Field size must be greater than 4")
+    return size
+
+def checkNumCandys(num: int):
+    num = int(num)
+    if num <= 4:
+        raise argparse.ArgumentTypeError("Number of candys must be greater than 4")
+    return num
+
+def main():
     
+    # Set up ArgumentParser
+    parser = argparse.ArgumentParser(description="Create inital data for the ReplayMemory.")
+    parser.add_argument("--size", help="Set the field size.", type=checkFieldSize, required=True)
+    parser.add_argument("--num", help="Set the number of candys.", type=checkNumCandys, required=True)
+
+    args = parser.parse_args()
+
+    field_size = args.size
+    num_elements = args.num
+
     batch_size = 16
     
     envs = gym.vector.AsyncVectorEnv([
@@ -75,12 +98,9 @@ def main(field_size=8, num_elements=6):
             lambda: CandyCrushGym(1600, field_size, num_elements),
         ])
     
-    capacity = 2500000
-    
-    num_episodes = 1000
-    episode_len = 50
-
-    idx = 0
+    capacity = 1000000
+    num_init_samples = 500000
+    episode_len = 100
 
     field_shape = envs.observation_space.shape[1:] # ignore batch size
     buff_states = np.zeros((capacity, *field_shape), dtype=np.int8)
@@ -88,10 +108,17 @@ def main(field_size=8, num_elements=6):
     buff_next_states = np.zeros((capacity, *field_shape), dtype=np.int8)
     buff_rewards = np.zeros(capacity, dtype=np.float32)
     
-    for _ in tqdm.tqdm(range(num_episodes), position=0, leave=True):
+    idx = 0
+    while idx < num_init_samples:
         states = envs.reset()
-     
+
+        print(idx)
+        
         for _ in range(episode_len):
+
+            if idx == num_init_samples:
+                break
+
             actions = sample_actions(batch_size, field_size)
 
             next_states, rewards, _, _ = envs.step(actions)
@@ -115,7 +142,10 @@ def main(field_size=8, num_elements=6):
                     buff_rewards[idx] = rewards[i]
 
                     idx+=1
-            
+                
+                if idx == num_init_samples:
+                    break
+                
             states = next_states
 
     filename = "./ReplayMemoryData/"
@@ -129,6 +159,6 @@ def main(field_size=8, num_elements=6):
 
 if __name__ == "__main__":
     try:
-        main(field_size=8, num_elements=6)
+        main()
     except KeyboardInterrupt:
         print("KeyboardInterrupt received")
