@@ -12,8 +12,8 @@ class DDDQN(tf.keras.Model):
 
   
         self.layer_list = [
-            tf.keras.layers.Conv2D(filters=16, kernel_size=(3,3), strides=(2,2), activation="tanh", padding='valid'),
-            tf.keras.layers.Conv2D(filters=32, kernel_size=(3,3), strides=(2,2), activation="tanh", padding='valid'),
+            tf.keras.layers.Conv2D(filters=16, kernel_size=(3,3), strides=(2,2), activation="tanh", padding='same'),
+            tf.keras.layers.Conv2D(filters=32, kernel_size=(3,3), strides=(2,2), activation="tanh", padding='same'),
             tf.keras.layers.Flatten(),
         ]
 

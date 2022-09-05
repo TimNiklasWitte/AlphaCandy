@@ -1,6 +1,6 @@
 import sys
 sys.path.append("../..")
-#sys.path.append("../AlphaCandy")
+sys.path.append("../AlphaCandy")
 from CandyCrushGym import *
 
 import tqdm

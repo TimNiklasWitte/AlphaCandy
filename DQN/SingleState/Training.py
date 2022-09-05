@@ -19,9 +19,8 @@ def main():
     num_episods = 500000
     update = 250
 
-    env_field_size = 8
+    env_field_size = 6
     env_num_elements = 6
-    # env_num_candies_dim = (env_num_elements * 4) + 2
 
     # Init gym
     envs = gym.vector.AsyncVectorEnv([

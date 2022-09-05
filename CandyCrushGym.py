@@ -8,7 +8,7 @@ class CandyCrushGym(gym.Env):
 
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, idx, field_size=8, num_elements=6, reward_per_hit=0.25):
+    def __init__(self, idx, field_size=8, num_elements=6):
 
         super(CandyCrushGym, self).__init__()
 
@@ -17,7 +17,7 @@ class CandyCrushGym(gym.Env):
         self.FIELD_SIZE = field_size
         self.NUM_DIRECTIONS = 4
         self.NUM_ELEMENTS = num_elements
-        self.REWARD_PER_HIT = reward_per_hit
+        self.REWARD_PER_HIT = 0.25
 
         self.COLOR_BOMB_CANDY_ID = 25
 
