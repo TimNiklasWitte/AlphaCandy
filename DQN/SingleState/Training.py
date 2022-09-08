@@ -16,10 +16,10 @@ def main():
     file_path = "test_logs/test"
     train_summary_writer = tf.summary.create_file_writer(file_path)
 
-    num_episods = 500000
-    update = 250
+    num_episods = 1000
+    update = 50
 
-    env_field_size = 6
+    env_field_size = 8
     env_num_elements = 6
 
     # Init gym
@@ -91,12 +91,12 @@ def main():
                 agent.update_target()
 
             # Save weights
-            if episode % 250 == 0:
-                agent.q_net.save_weights(f"./saved_models/trained_weights_episode_{episode}", save_format="tf")
+            if episode % update == 0:
+                agent.q_net.save_weights(f"./saved_models/trained_weights_dqn/{env_field_size}_{env_num_elements}_episode_{episode}", save_format="tf")
 
-            tf.summary.scalar(f"Average reward (DQN_SingleState)", np.mean(rewards_list), step=episode)
-            tf.summary.scalar(f"Score (DQN_SingleState)", score, step=episode)
-            tf.summary.scalar(f"Epsilon (EpsilonGreedyStrategy) (DQN_SingleState)", agent.strategy.get_exploration_rate(), step=episode)
+            tf.summary.scalar(f"AvgReward_{env_field_size}_{env_num_elements}_DQN", np.mean(rewards_list), step=episode)
+            tf.summary.scalar(f"Score_{env_field_size}_{env_num_elements}_DQN", score, step=episode)
+            tf.summary.scalar(f"Epsilon_{env_field_size}_{env_num_elements}_DQN", agent.strategy.get_exploration_rate(), step=episode)
 
 
             print(f"   Episode: {episode}")

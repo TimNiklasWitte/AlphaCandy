@@ -61,8 +61,8 @@ def checkFieldSize(size: str):
 
 def checkNumCandys(num: int):
     num = int(num)
-    if num <= 4:
-        raise argparse.ArgumentTypeError("Number of candys must be greater than 4")
+    if num <= 3:
+        raise argparse.ArgumentTypeError("Number of candys must be greater than 3")
     return num
 
 def main():
