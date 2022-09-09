@@ -1,14 +1,10 @@
-from cgi import test
-from itertools import accumulate
 import numpy as np
-from sklearn import datasets
-from sklearn.metrics import accuracy_score
 import tensorflow as tf
 import tqdm
 
 from DecisionTransformer import *
 
-capacity = 80000
+capacity = 250000
 episode_len = 10
 field_size = 6
 
@@ -26,13 +22,14 @@ def loadData():
 
         for episode_idx in range(episode_len):
             states = buff_states[buff_idx]
-            states[episode_idx:episode_len-1, :, :] = 0
+
+            states[episode_idx+1:episode_len, :, :] = 0
 
             actions = buff_actions[buff_idx]
-            actions[episode_idx:episode_len-1] = 0
+            actions[episode_idx+1:episode_len] = 0
 
             rewards = buff_rewards[buff_idx]
-            rewards[episode_idx:episode_len-1] = 0
+            rewards[episode_idx+1:episode_len] = 0
 
             yield states, actions, rewards
         #yield (states[buff_idx], actions[buff_idx], rewards[buff_idx])
@@ -55,7 +52,7 @@ def main():
         )
     )
 
-    train_size = 700000
+    train_size = 2400000
 
     train_dataset = dataset.take(train_size)
     train_dataset = train_dataset.apply(prepare_data)
@@ -78,7 +75,7 @@ def main():
             decisionTransformer.train_step(game_states, rewards, actions_target)
 
         log(train_summary_writer, decisionTransformer, train_dataset, test_dataset, epoch + 1)
-        
+        decisionTransformer.save_weights(f"./saved_models/trained_weights_epoch_{epoch + 1}", save_format="tf")
 
 def prepare_data(data):
     
@@ -111,7 +108,7 @@ def prepare_data(data):
     #
     # cache, shuffle, batch, prefetch
     # 
-    data = data.cache()
+    #data = data.cache()
  
     data = data.shuffle(1000)
     data = data.batch(batch_size)
@@ -155,17 +152,6 @@ def log(train_summary_writer, decisionTransformer, train_dataset, test_dataset, 
         decisionTransformer.metric_loss.reset_states()
         decisionTransformer.metric_accuracy.reset_states()
 
-        # if epoch == 0:
-        #     train_dataset = train_dataset.take(500) # approx full train dataset
-        #     mean_loss = decisionTransformer.test(train_dataset)
-        #     tf.summary.scalar(f"train_loss", mean_loss, step=0)
-        
-        # else:
-        #     mean_loss = decisionTransformer.metric_loss.result()
-        #     tf.summary.scalar(f"train_loss", mean_loss, step=epoch)
-
-        # mean_loss = decisionTransformer.test(test_dataset)
-        # tf.summary.scalar(f"test_loss", mean_loss, step=epoch)
 
 if __name__ == "__main__":
     try:

@@ -8,7 +8,7 @@ class DecisionTransformer(tf.keras.Model):
 
 
         self.feature_extractor = tf.keras.layers.Conv2D(filters=64, kernel_size=(3,3), strides=(2,2), activation="tanh", padding='same')
-        self.bottleneck = tf.keras.layers.Conv2D(filters=16, kernel_size=(1,1), strides=(1,1), activation="tanh", padding='same')
+        self.bottleneck = tf.keras.layers.Conv2D(filters=32, kernel_size=(1,1), strides=(1,1), activation="tanh", padding='same')
         self.embedding = tf.keras.layers.Dense(10, activation=tf.nn.tanh)
 
         self.self_attention = tf.keras.layers.MultiHeadAttention(num_heads=5, key_dim=20, value_dim=10)
@@ -83,6 +83,9 @@ class DecisionTransformer(tf.keras.Model):
 
         self.metric_loss.update_state(loss)
 
+        actions_prediction = tf.argmax(actions_prediction, axis=-1)
+        actions_target = tf.argmax(actions_target, axis=-1)
+        self.metric_accuracy.update_state(actions_target, actions_prediction)
     
     #@tf.function
     def test_step(self, dataset):
@@ -96,22 +99,6 @@ class DecisionTransformer(tf.keras.Model):
             loss = self.loss_function(actions_target, actions_prediction)
             self.metric_loss.update_state(loss)
 
-          
             actions_prediction = tf.argmax(actions_prediction, axis=-1)
             actions_target = tf.argmax(actions_target, axis=-1)
             self.metric_accuracy.update_state(actions_target, actions_prediction)
-
-        # self.metric_loss.reset_states()
-
-        # # test over complete test data
-        # for game_states, actions_target, rewards in test_data:           
-        #     actions_prediction = self(game_states, rewards)
-            
-        #     loss = self.loss_function(actions_target, actions_prediction)
-        #     self.metric_loss.update_state(loss)
-
-
-
-        # mean_loss = self.metric_loss.result()
-        # self.metric_loss.reset_states()
-        #return mean_loss
