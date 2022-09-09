@@ -67,7 +67,7 @@ def fill_buff(num_fill_buff_threads, samples_per_thread, thread_id,
 
     
 
-    for sample_idx in range(samples_per_thread):
+    for i in range(samples_per_thread):
 
         state = env.reset()
 
@@ -91,11 +91,15 @@ def fill_buff(num_fill_buff_threads, samples_per_thread, thread_id,
                 else:
                     repeat = False
 
-            states[sample_idx, episode_idx, :, :] = state
-            actions[sample_idx, episode_idx] = action
-            rewards[sample_idx, episode_idx] = reward
+            idx = num_fill_buff_threads*i + thread_id
+            states[idx, episode_idx, :, :] = state
+            actions[idx, episode_idx] = action
+            rewards[idx, episode_idx] = reward
 
             state = next_state
+    
+        if thread_id == 0 and i % 100 == 0:
+            print(i)
                     
 
 def checkFieldSize(size: str):
@@ -124,17 +128,16 @@ def main():
     num_elements = args.num
 
     
-    #
-    # Fill ReplayMemory
-    # 
-
-    num_fill_buff_threads = 10
-    samples_per_thread = 1000
+    num_fill_buff_threads = 8
+    samples_per_thread = 5000
     episode_len = 10
 
     capacity = num_fill_buff_threads * samples_per_thread
     fill_buff_threads = []
 
+    #
+    # Create shared memory
+    #
     states_shm = shared_memory.SharedMemory(create=True, size=capacity * episode_len * field_size*field_size * 4)
     actions_shm = shared_memory.SharedMemory(create=True, size=capacity * episode_len * 4)
     rewards_shm = shared_memory.SharedMemory(create=True, size=capacity * episode_len * 4)
@@ -143,7 +146,9 @@ def main():
     actions = np.ndarray((capacity,episode_len), dtype=np.uint8, buffer=actions_shm.buf)
     rewards = np.ndarray((capacity,episode_len), dtype=np.float32, buffer=rewards_shm.buf)
   
-
+    #
+    # Run threads
+    #
     for thread_idx in range(num_fill_buff_threads):
         process = Process(target=fill_buff, args=(num_fill_buff_threads, samples_per_thread, thread_idx, 
                                                 field_size, num_elements,
@@ -153,9 +158,27 @@ def main():
         process.start()
         fill_buff_threads.append(process)
 
+    #
+    # Join
+    #
     for process in fill_buff_threads: 
         process.join()
     
+
+    #
+    # Save data
+    #
+    filename = "./TrainingData/"
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+
+    np.save(f"./TrainingData/states_{capacity}", states)
+    np.save(f"./TrainingData/actions_{capacity}", actions)
+    np.save(f"./TrainingData/rewards_{capacity}", rewards)
+
+
+    #
+    # Free shared memory
+    #
     states_shm.close()
     actions_shm.close()
     rewards_shm.close()
@@ -165,8 +188,7 @@ def main():
     rewards_shm.unlink()
 
     
-   
-
+    
 if __name__ == "__main__":
     try:
         main()
