@@ -1,5 +1,8 @@
 import numpy as np
 import tensorflow as tf
+import tqdm
+
+from DecisionTransformer import *
 
 capacity = 40000
 episode_len = 10
@@ -32,16 +35,25 @@ def main():
 
     dataset = dataset.apply(prepare_data)
 
-    for data in dataset.take(1):
-        states, actions, rewards = data
-        print(states)
-        #print(actions)
-        #print(rewards)
+    train_dataset = dataset.take(100)
+    test_dataset = dataset.take(100)
 
+    num_epochs = 1
 
-    # dataset = tf.data.Dataset.from_generator(tmp, 
-    #     output_signature=()
-    # (tf.uint8, tf.uint8))
+    decisionTransformer = DecisionTransformer(episode_len,num_actions=field_size*field_size*4)
+
+    for epoch in range(num_epochs):
+            
+        print(f"Epoch {epoch}")
+
+        for states, actions, rewards in tqdm.tqdm(train_dataset,position=0, leave=True): 
+            decisionTransformer(states)
+            
+    # for data in dataset.take(1):
+    #     states, actions, rewards = data
+    #     print(states)
+    #     print(actions)
+    #     print(rewards)
 
 
 def prepare_data(data):
@@ -56,7 +68,6 @@ def prepare_data(data):
     # state shape: (episode_len, field_size, field_size) -> (episode_len * field_size * field_size)
     data = data.map(lambda states, actions, rewards: (tf.reshape(states, shape=(episode_len*field_size*field_size,)), actions, rewards))
 
-    
     # one hot
     num_one_hot = 26 # num of candys
     data = data.map(lambda states, actions, rewards: (tf.one_hot(states, depth=num_one_hot), actions, rewards))
@@ -65,8 +76,18 @@ def prepare_data(data):
     data = data.map(lambda states, actions, rewards: (tf.reshape(states, shape=(episode_len, field_size, field_size, num_one_hot)), actions, rewards))
 
 
+    #
+    # onehotify actions
+    #
+
+    num_actions = field_size*field_size*4
+    data = data.map(lambda states, actions, rewards: (states, tf.one_hot(actions, depth=num_actions), rewards))
+
+    #
+    # cache, shuffle, batch, prefetch
+    # 
     data = data.cache()
-    #shuffle, batch, prefetch
+ 
     data = data.shuffle(1000)
     data = data.batch(16)
     data = data.prefetch(tf.data.experimental.AUTOTUNE)
