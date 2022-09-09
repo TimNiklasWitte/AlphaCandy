@@ -106,16 +106,16 @@ def main():
     episode_len = 10
 
     field_shape = envs.observation_space.shape[1:] # ignore batch size
-    buff_states = np.zeros((num_samples, *field_shape, episode_len), dtype=np.int8)
-    buff_actions = np.zeros((num_samples, episode_len), dtype=np.int16)
+    buff_states = np.zeros((num_samples, *field_shape, episode_len), dtype=np.uint8)
+    buff_actions = np.zeros((num_samples, episode_len), dtype=np.uint16)
     
     buff_rewards = np.zeros((num_samples, episode_len), dtype=np.float32)
     
     idx = 0
     while idx < num_samples:
 
-        episode_states = np.zeros((batch_size, *field_shape, episode_len), dtype=np.int8)
-        episode_actions = np.zeros((batch_size, episode_len), dtype=np.int16)
+        episode_states = np.zeros((batch_size, *field_shape, episode_len), dtype=np.uint8)
+        episode_actions = np.zeros((batch_size, episode_len), dtype=np.uint16)
         episode_rewards = np.zeros((batch_size, episode_len), dtype=np.float32)
 
         states = envs.reset()
