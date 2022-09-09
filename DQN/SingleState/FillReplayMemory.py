@@ -103,9 +103,9 @@ def main():
     episode_len = 100
 
     field_shape = envs.observation_space.shape[1:] # ignore batch size
-    buff_states = np.zeros((capacity, *field_shape), dtype=np.int8)
-    buff_actions = np.zeros(capacity, dtype=np.int8)
-    buff_next_states = np.zeros((capacity, *field_shape), dtype=np.int8)
+    buff_states = np.zeros((capacity, *field_shape), dtype=np.uint8)
+    buff_actions = np.zeros(capacity, dtype=np.uint8)
+    buff_next_states = np.zeros((capacity, *field_shape), dtype=np.uint8)
     buff_rewards = np.zeros(capacity, dtype=np.float32)
     
     idx = 0

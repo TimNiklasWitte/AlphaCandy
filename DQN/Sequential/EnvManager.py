@@ -44,7 +44,7 @@ class EnvManager:
     def reset(self):
 
         current_state = self.gym.reset()
-        self.state = np.zeros(shape=(self.window_size, *current_state.shape), dtype=np.int8)
+        self.state = np.zeros(shape=(self.window_size, *current_state.shape), dtype=np.uint8)
         self.state[0, ...] = current_state
 
         self.step_cnt = 0
