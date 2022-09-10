@@ -1,3 +1,5 @@
+#### The code in this implementation is based on pythonlesson's implementation of PPO for LunarLander (https://github.com/pythonlessons/Reinforcement_Learning/tree/master/LunarLander-v2_PPO)
+
 from PPO_Agent import*
 import argparse
 
