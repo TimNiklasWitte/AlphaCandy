@@ -128,8 +128,8 @@ def main():
     num_elements = args.num
 
     
-    num_fill_buff_threads = 10
-    samples_per_thread = 2000
+    num_fill_buff_threads = 12
+    samples_per_thread = 20000
     episode_len = 10
 
     capacity = num_fill_buff_threads * samples_per_thread

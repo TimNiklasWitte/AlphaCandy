@@ -5,7 +5,7 @@ import tqdm
 
 from DecisionTransformer import *
 
-capacity = 20000
+capacity = 240000
 episode_len = 10
 field_size = 6
 
@@ -44,8 +44,8 @@ def main():
     global episode_len
     global field_size
 
-    num_epochs = 20
-    train_size = 20000
+    num_epochs = 100
+    train_size = 2000000
 
 
     # Logging
@@ -67,7 +67,7 @@ def main():
     train_dataset = dataset.take(train_size)
     train_dataset = train_dataset.apply(prepare_data)
 
-    test_dataset = dataset.take(1000)
+    test_dataset = dataset.take(10000)
     test_dataset = test_dataset.apply(prepare_data)
     
     decisionTransformer = DecisionTransformer(episode_len,num_actions=field_size*field_size*4)
