@@ -1,10 +1,11 @@
+from calendar import day_abbr
 import numpy as np
 import tensorflow as tf
 import tqdm
 
 from DecisionTransformer import *
 
-capacity = 250000
+capacity = 20000
 episode_len = 10
 field_size = 6
 
@@ -12,33 +13,40 @@ batch_size = 32
 
 def loadData():
 
-    global capacity, episode_len
+    global capacity, episode_len, field_size
+
+    none_action_id = field_size*field_size*4 + 1
 
     buff_states = np.load(f"./TrainingData/states_{capacity}.npy")
-    buff_actions = np.load(f"./TrainingData/actions_{capacity}.npy")
     buff_rewards = np.load(f"./TrainingData/rewards_{capacity}.npy")
+    buff_actions = np.load(f"./TrainingData/actions_{capacity}.npy")
 
     for buff_idx in range(capacity):
 
         for episode_idx in range(episode_len):
-            states = buff_states[buff_idx]
+            states = np.copy(buff_states[buff_idx])
+            states[episode_idx + 1:episode_len, :, :] = 0
 
-            states[episode_idx+1:episode_len, :, :] = 0
+            actions = np.copy(buff_actions[buff_idx])
+            actions[episode_idx:episode_len] = none_action_id
 
-            actions = buff_actions[buff_idx]
-            actions[episode_idx+1:episode_len] = 0
+            rewards = np.copy(buff_rewards[buff_idx])
+            rewards[episode_idx + 1:episode_len] = 0
 
-            rewards = buff_rewards[buff_idx]
-            rewards[episode_idx+1:episode_len] = 0
-
-            yield states, actions, rewards
-        #yield (states[buff_idx], actions[buff_idx], rewards[buff_idx])
+            action_target = buff_actions[buff_idx, episode_idx]
+          
+            yield states, actions, rewards, action_target
+     
 
 
 def main():
 
     global episode_len
     global field_size
+
+    num_epochs = 20
+    train_size = 20000
+
 
     # Logging
     file_path = "test_logs/test" 
@@ -48,31 +56,34 @@ def main():
         output_signature=(
             tf.TensorSpec(shape=(episode_len, field_size, field_size), dtype=tf.uint8), # states
             tf.TensorSpec(shape=(episode_len,), dtype=tf.uint8),  # actions
-            tf.TensorSpec(shape=(episode_len,), dtype=tf.float32) # rewards
+            tf.TensorSpec(shape=(episode_len,), dtype=tf.float32), # rewards
+            tf.TensorSpec(shape=(), dtype=tf.uint8),  # action_target
         )
     )
 
-    train_size = 2400000
-
+    #
+    # Dataset
+    #
     train_dataset = dataset.take(train_size)
     train_dataset = train_dataset.apply(prepare_data)
 
     test_dataset = dataset.take(1000)
     test_dataset = test_dataset.apply(prepare_data)
- 
-
-    num_epochs = 20
-
+    
     decisionTransformer = DecisionTransformer(episode_len,num_actions=field_size*field_size*4)
-  
+    
     log(train_summary_writer, decisionTransformer, train_dataset, test_dataset, epoch=0)
+
+    #
+    # Train loop
+    #
 
     for epoch in range(num_epochs):
             
         print(f"Epoch {epoch}")
 
-        for game_states, actions_target, rewards in tqdm.tqdm(train_dataset, total=int(train_size/batch_size)): 
-            decisionTransformer.train_step(game_states, rewards, actions_target)
+        for states, actions, rewards, action_target in tqdm.tqdm(train_dataset, total=int(train_size/batch_size)): 
+            decisionTransformer.train_step(states, actions, rewards, action_target)
 
         log(train_summary_writer, decisionTransformer, train_dataset, test_dataset, epoch + 1)
         decisionTransformer.save_weights(f"./saved_models/trained_weights_epoch_{epoch + 1}", save_format="tf")
@@ -88,22 +99,28 @@ def prepare_data(data):
     #
 
     # state shape: (episode_len, field_size, field_size) -> (episode_len * field_size * field_size)
-    data = data.map(lambda states, actions, rewards: (tf.reshape(states, shape=(episode_len*field_size*field_size,)), actions, rewards))
+    data = data.map(lambda states, actions, rewards, action_target: (tf.reshape(states, shape=(episode_len*field_size*field_size,)), actions, rewards, action_target))
 
     # one hot
     num_one_hot = 26 # num of candys
-    data = data.map(lambda states, actions, rewards: (tf.one_hot(states, depth=num_one_hot), actions, rewards))
+    data = data.map(lambda states, actions, rewards, action_target: (tf.one_hot(states, depth=num_one_hot), actions, rewards, action_target))
 
     # state shape: (episode_len * field_size * field_size) -> (episode_len, field_size, field_size)
-    data = data.map(lambda states, actions, rewards: (tf.reshape(states, shape=(episode_len, field_size, field_size, num_one_hot)), actions, rewards))
+    data = data.map(lambda states, actions, rewards, action_target: (tf.reshape(states, shape=(episode_len, field_size, field_size, num_one_hot)), actions, rewards, action_target))
 
 
     #
     # onehotify actions
     #
 
-    num_actions = field_size*field_size*4
-    data = data.map(lambda states, actions, rewards: (states, tf.one_hot(actions, depth=num_actions), rewards))
+    num_actions = field_size*field_size*4 + 1
+    data = data.map(lambda states, actions, rewards, action_target: (states, tf.one_hot(actions, depth=num_actions), rewards, action_target))
+
+    #
+    # onehotify action_target
+    #
+
+    data = data.map(lambda states, actions, rewards, action_target: (states, actions, rewards, tf.one_hot(action_target, depth=num_actions)))
 
     #
     # cache, shuffle, batch, prefetch
