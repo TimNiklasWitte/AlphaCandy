@@ -10,6 +10,8 @@ dependencies:
   - tk
   - tqdm
   - gym
+  - pandas
+  - scipy
   - pip:
       - tensorboard
       - tensorflow
