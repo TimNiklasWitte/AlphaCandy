@@ -10,8 +10,8 @@ def main():
 
     for num_candy in range(4, 7):
     
-        plot_idx = 4 - num_candy
-
+        plot_idx = num_candy - 4
+    
         for field_size in range(5, 9):
 
             file = f"{base_path}_{field_size}_{num_candy}.csv"
