@@ -3,10 +3,8 @@ sys.path.append("../")
 sys.path.append("../AlphaCandy")
 from CandyCrushGym import *
 
-import tqdm
 import os
 import argparse
-import gym
 
 import numpy as np
 from multiprocessing import Process, shared_memory
@@ -114,45 +112,50 @@ def checkNumCandys(num: int):
         raise argparse.ArgumentTypeError("Number of candys must be greater than 3")
     return num
 
+def checkTrainSize(size: str):
+    size = int(size)
+    if size <= 0:
+        raise argparse.ArgumentTypeError("Number of training samples must be greater than 0")
+    return size
 
 def main():
     
     # Set up ArgumentParser
-    parser = argparse.ArgumentParser(description="Create inital data for the ReplayMemory.")
-    parser.add_argument("--size", help="Set the field size.", type=checkFieldSize, required=True)
-    parser.add_argument("--num", help="Set the number of candys.", type=checkNumCandys, required=True)
+    parser = argparse.ArgumentParser(description="Create Training data.")
+    parser.add_argument("--fieldSize", help="Set the field size.", type=checkFieldSize, required=True)
+    parser.add_argument("--numCandys", help="Set the number of candys.", type=checkNumCandys, required=True)
+    parser.add_argument("--trainSize", help="Set the number of training samples.", type=checkTrainSize, required=True)
 
     args = parser.parse_args()
 
-    field_size = args.size
-    num_elements = args.num
-
+    field_size = args.fieldSize
+    num_candys = args.numCandys
+    train_size = args.trainSize
     
-    num_fill_buff_threads = 12
-    samples_per_thread = 20000
+    num_fill_buff_threads = 10
+    samples_per_thread = int(train_size/num_fill_buff_threads)
     episode_len = 10
 
-    capacity = num_fill_buff_threads * samples_per_thread
     fill_buff_threads = []
 
     #
     # Create shared memory
     #
-    states_shm = shared_memory.SharedMemory(create=True, size=capacity * episode_len * field_size*field_size * 4)
-    actions_shm = shared_memory.SharedMemory(create=True, size=capacity * episode_len * 4)
-    rewards_shm = shared_memory.SharedMemory(create=True, size=capacity * episode_len * 4)
+    states_shm = shared_memory.SharedMemory(create=True, size=train_size * episode_len * field_size*field_size * 4)
+    actions_shm = shared_memory.SharedMemory(create=True, size=train_size * episode_len * 4)
+    rewards_shm = shared_memory.SharedMemory(create=True, size=train_size * episode_len * 4)
        
-    states = np.ndarray((capacity, episode_len, field_size, field_size), dtype=np.uint8, buffer=states_shm.buf)
-    actions = np.ndarray((capacity,episode_len), dtype=np.uint8, buffer=actions_shm.buf)
-    rewards = np.ndarray((capacity,episode_len), dtype=np.float32, buffer=rewards_shm.buf)
+    states = np.ndarray((train_size, episode_len, field_size, field_size), dtype=np.uint8, buffer=states_shm.buf)
+    actions = np.ndarray((train_size,episode_len), dtype=np.uint8, buffer=actions_shm.buf)
+    rewards = np.ndarray((train_size,episode_len), dtype=np.float32, buffer=rewards_shm.buf)
   
     #
     # Run threads
     #
     for thread_idx in range(num_fill_buff_threads):
         process = Process(target=fill_buff, args=(num_fill_buff_threads, samples_per_thread, thread_idx, 
-                                                field_size, num_elements,
-                                                capacity, episode_len, 
+                                                field_size, num_candys,
+                                                train_size, episode_len, 
                                                 states_shm, actions_shm, rewards_shm))
 
         process.start()
@@ -171,9 +174,9 @@ def main():
     filename = "./TrainingData/"
     os.makedirs(os.path.dirname(filename), exist_ok=True)
 
-    np.save(f"./TrainingData/states_{capacity}", states)
-    np.save(f"./TrainingData/actions_{capacity}", actions)
-    np.save(f"./TrainingData/rewards_{capacity}", rewards)
+    np.save(f"./TrainingData/states_{field_size}_{num_candys}_{train_size}", states)
+    np.save(f"./TrainingData/actions_{field_size}_{num_candys}_{train_size}", actions)
+    np.save(f"./TrainingData/rewards_{field_size}_{num_candys}_{train_size}", rewards)
 
 
     #
