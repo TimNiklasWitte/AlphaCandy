@@ -1,2 +1,2 @@
-model_checkpoint_path: "trained_weights_5_5"
-all_model_checkpoint_paths: "trained_weights_5_5"
+model_checkpoint_path: "trained_weights_8_6"
+all_model_checkpoint_paths: "trained_weights_8_6"

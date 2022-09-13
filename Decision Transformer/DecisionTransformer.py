@@ -47,10 +47,13 @@ class DecisionTransformer(tf.keras.Model):
             # feature_extractor -> bottleneck -> embedding
             state_embedding = self.state_feature_extractor(state)
             state_embedding = self.state_bottleneck(state_embedding)
+
+            feature_map_size = state_embedding.shape[1]
+
             state_embedding = self.state_embedding(state_embedding)
 
             # embedding: flatten
-            state_embedding = tf.reshape(state_embedding, shape=(batch_size, 3*3*10))
+            state_embedding = tf.reshape(state_embedding, shape=(batch_size, feature_map_size*feature_map_size*10))
 
             # collect embedding for each time step
             states_embeddings_list.append(state_embedding)
