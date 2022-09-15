@@ -1,3 +1,5 @@
+# The code in this implementation is based on pythonlesson's LunarLander PPO tutorial (https://pylessons.com/LunarLander-v2-PPO)
+
 TensorbaordX
 Tensorflow
 Gym
