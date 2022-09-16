@@ -6,6 +6,7 @@ from matplotlib.ticker import MaxNLocator
 import sys
 sys.path.append("../")
 sys.path.append("../AlphaCandy")
+sys.path.append("../..")
 from CandyCrushGym import *
 
 from DecisionTransformer import *
@@ -14,10 +15,10 @@ from DecisionTransformer import *
 def main():
     episode_len = 10
 
-    desired_rewards = [0.25, 0.5, 0.75, 1.0, 1.25, 1.50, 1.75, 2.00]
+    desired_rewards = [0.25, 0.5, 0.75, 1.0, 1.25, 1.50]
 
     NUM_ROWS = 3
-    NUM_RUNS = 1
+    NUM_RUNS = 100
 
     fig, ax = plt.subplots(nrows=NUM_ROWS, ncols=1)
 
@@ -34,7 +35,7 @@ def main():
             for field_size in range(5, 9):
 
                 decisionTransformer = DecisionTransformer(episode_len,num_actions=field_size*field_size*4)
-                decisionTransformer.load_weights(f"./saved_models/trained_weights_{field_size}_{num_candys}").expect_partial()
+                decisionTransformer.load_weights(f"../saved_models/trained_weights_{field_size}_{num_candys}").expect_partial()
 
                 avg_reward = 0
                 
@@ -119,13 +120,13 @@ def main():
     
 
     ax[NUM_ROWS - 1].legend(loc='upper center', bbox_to_anchor=(0.5, -0.65),
-        fancybox=True, shadow=True, ncol=4, title="Desired rewards")
+        fancybox=True, shadow=True, ncol=3, title="Desired rewards")
 
 
     fig.set_size_inches(w=6, h=6)
             
     plt.tight_layout()
-    plt.savefig("./tmp.png")
+    plt.savefig("./DesiredRewardPerformance.png")
     plt.show()
 
 if __name__ == "__main__":
