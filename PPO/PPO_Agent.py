@@ -19,11 +19,14 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from CandyCrushGym import *
 
 class Agent_PPO: 
+
+    # PPO Main Optimization Algorithm
     def __init__(self, env_name,size,num):
       
-        # Set Environment parameters
-        self.field_size = num
-        self.num_elements = size
+        # Initialization
+        # Environment and PPO parameters
+        self.field_size = size
+        self.num_elements = num
         self.env_name = env_name
         self.seed = np.random.randint(16000) # Get seed for CC gym initialization
         self.env = CandyCrushGym(self.seed,self.field_size, self.num_elements)
@@ -32,12 +35,12 @@ class Agent_PPO:
 
         # Set PPO parameters
         self.lr = 0.00025
-        self.optimizer = tf.keras.optimizers.Adam
-        self.max_episodes = 1000 # Maximum amount of espisodes
+        self.optimizer = Adam
+        self.max_episodes = 500 # Total amount of espisodes
         self.episode = 0 # Keep track of current episode
         self.epochs = 10 # Number of Epochs for Training
-        self.batches = 100 # Number of batches for each training step
-        self.max_iterations = 1000 # Maximum number of iterations per episode
+        self.batches = 50 # Number of batches collected before each training step
+        self.max_iterations = 100 # Maximum number of iterations per episode
         self.best_average = 0 # Initialize best average
 
         # Start TensorboardX Logger
@@ -132,62 +135,69 @@ class Agent_PPO:
 
             # Initialize memory
             states, next_states, actions, rewards, predictions, dones = [], [], [], [], [], []
+
+            # collect batch of size self.batches before training
             for t in range(self.batches):
 
-                # Let Actor choose valid action
+                # collect episodes
                 while True:
-                    action, action_onehot, prediction = self.get_action(state)
 
-                    if self.env.isValidAction(action):
+                    # Let Actor choose valid action
+                    while True:
+                        action, action_onehot, prediction = self.get_action(state)
+
+                        if self.env.isValidAction(action):
+                            break
+
+                    # Get next state, reward, and done signal
+                    next_state, reward, done, _ = self.env.step(action)
+
+                    # Add data to memory
+                    states.append(state)
+                    next_states.append(np.reshape(next_state, [1, self.state_size]))
+                    actions.append(action_onehot)
+                    rewards.append(reward)
+                    predictions.append(prediction)
+
+                    # Update state
+                    state = np.reshape(next_state, [1, self.state_size])
+
+                    # Sum up score of current epoch
+                    score += reward
+
+                    # Increase iterations counter
+                    i += 1
+
+                    # Check if iteration cap is reached
+                    if i >= self.max_iterations:
+                      done = True
+                    
+                    # Check if done is reached
+                    dones.append(done)
+
+                    if done:
+
+                        # Increase episode counter
+                        self.episode += 1
+
+                        # Get current average and potentially save model
+                        average, save_text = self.determine_save(score, self.episode)
+
+                        # Print information
+                        print(f"episode: {self.episode}/{self.max_episodes}, score: {score}, average: {round(average,2)} {save_text}")
+
+                        # Add Variable info to TB
+                        self.writer.add_scalar(f"Var/Score_{self.field_size}_{self.num_elements}_PPO", score, self.episode)
+                        self.writer.add_scalar(f"Var/AvgReward_{self.field_size}_{self.num_elements}_PPO", average, self.episode)
+
+                        # Reset
+                        state, done, score, save_text = self.env.reset(), False, 0, ''
+                        state = np.reshape(state, [1, self.state_size])
+                        i = 0
+
                         break
-
-                # Get next state, reward, and done signal
-                next_state, reward, done, _ = self.env.step(action)
-
-                # Add data to memory
-                states.append(state)
-                next_states.append(np.reshape(next_state, [1, self.state_size]))
-                actions.append(action_onehot)
-                rewards.append(reward)
-                predictions.append(prediction)
-
-                # Update state
-                state = np.reshape(next_state, [1, self.state_size])
-
-                # Sum up score of current epoch
-                score += reward
-
-                # Increase iterations counter
-                i += 1
-
-                # Check if iteration cap is reached
-                if i >= self.max_iterations:
-                  done = True
                 
-                # Check if done is reached
-                dones.append(done)
-
-                if done:
-
-                    # Increase episode counter
-                    self.episode += 1
-
-                    # Get current average and potentially save model
-                    average, save_text = self.determine_save(score, self.episode)
-
-                    # Print information
-                    print(f"episode: {self.episode}/{self.max_episodes}, score: {score}, average: {round(average,2)} {save_text}")
-
-                    # Add Variable info to TB
-                    self.writer.add_scalar(f"Var/Score_{self.field_size}_{self.num_elements}_PPO", score, self.episode)
-                    self.writer.add_scalar(f"Var/AvgReward_{self.field_size}_{self.num_elements}_PPO", average, self.episode)
-
-                    # Reset
-                    state, done, score, save_text = self.env.reset(), False, 0, ''
-                    state = np.reshape(state, [1, self.state_size])
-                    i = 0
-            
-            # After self.batches episode update both networks
+            # After self.batches episodes update both networks
             self.replay_memory(states, actions, rewards, predictions, dones, next_states)
 
             # Check if maximum number of episodes is reached
