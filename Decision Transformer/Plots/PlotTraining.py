@@ -36,7 +36,7 @@ def main():
     
 
     plt.tight_layout()
-    plt.savefig("./test_accuracy.png")
+    plt.savefig("./DesiredRewardPerformance.png")
     plt.show()
   
 
