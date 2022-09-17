@@ -1,8 +1,11 @@
 from Window import *
 
 import sys
-sys.path.append("../AlphaCandy")
+sys.path.append("../../AlphaCandy")
 from CandyCrushGym import *
+sys.path.append("../Decision Transformer")
+from DecisionTransformer import *
+
 
 import time 
 
@@ -10,13 +13,14 @@ from tkinter.constants import *
 import tkinter as tk
 
 import numpy as np
+import tensorflow as tf
 
 show_arrow_time = 1
 show_swap_time = 1
 show_empty_time = 1
 drop_candy_time = 0.03
 
-def display_execute_action(action, env, window):      
+def display_execute_action(action, action_probs, env, window):      
 
         #
         # Display arrow
@@ -91,7 +95,7 @@ def display_execute_action(action, env, window):
             env.state[y,x] = env.state[y_swap, x_swap]
             env.state[y_swap, x_swap] = tmp
 
-            window.update_plots(reward)
+            window.update_plots(reward, action_probs)
             window.update_game_field()
 
             time.sleep(show_empty_time) # show also undo swap game state
@@ -99,7 +103,7 @@ def display_execute_action(action, env, window):
             return 
         
         window.update_game_field()
-        window.update_plots(reward)
+        window.update_plots(reward, action_probs)
      
         time.sleep(show_empty_time)
 
@@ -141,35 +145,147 @@ def display_execute_action(action, env, window):
 
 def main():
 
-    env = CandyCrushGym(100, 8, 6)
-    env.reset()
+    episode_len = 10
+    num_candys = 4
+    field_size = 8
+
+
+    decisionTransformer = DecisionTransformer(episode_len,num_actions=field_size*field_size*4)
+    decisionTransformer.load_weights(f"../Decision Transformer/saved_models/trained_weights_{field_size}_{num_candys}").expect_partial()
+
+    seed = np.random.randint(0, 500000)
+    env = CandyCrushGym(seed, field_size=field_size, num_elements=num_candys)
+
     window = Window(env)
-    
-    
     window.update_game_field()
 
-    for i in range(100):
+    state = env.reset()
 
+    buff_states = np.zeros(shape=(1, episode_len, field_size, field_size), dtype=np.uint8)
+    buff_actions = np.zeros(shape=(1, episode_len,), dtype=np.uint8)
+    buff_rewards = np.zeros(shape=(1, episode_len,), dtype=np.float32)
+
+    desired_reward = 0.25
+
+    buff_states[0, 0, :, :] = state
+    buff_rewards[0, 0] = desired_reward
+
+    none_action_id = field_size*field_size*4 + 1
+    buff_actions[0, 0:episode_len] = none_action_id
+
+    
+
+    while True:
+        
         window.update_game_field()
+
+        reward = 0
+        episode_idx = 0
         
-        while True:
-            action = np.random.randint(0, 255)
+        cnt_zero = 0
+        while reward == 0:
+
+            # buff_states[0, episode_idx, :, :] = state
+            # buff_rewards[0, episode_idx] = 0.25
+
+            # none_action_id = field_size*field_size*4 + 1
+            # buff_actions[0, episode_idx:episode_len] = none_action_id
+
+            #
+            # Preprocess
+            #
+
+            # onehotify states
+            states = np.reshape(buff_states, newshape=(1*episode_len*field_size*field_size))
+            num_one_hot = 26 # num of candys
+            states = tf.one_hot(states, depth=num_one_hot)
+            states = tf.reshape(states, shape=(1, episode_len, field_size, field_size, num_one_hot))
+
+            # onehotify actions
+            num_actions = field_size*field_size*4 + 1
+            actions = tf.one_hot(buff_actions, depth=num_actions)
+
+            action = decisionTransformer(states, actions, buff_rewards)
+            action = action[0] # remove batch dim
+
+            best_action = np.argmax(action)
+
+            # invalid action -> choose valid action
+            if not env.isValidAction(best_action):
+                best_action = 2
+
+            # buff_actions[0, episode_idx] = best_action
+
+            next_state, reward, _, _ = env.step(best_action)
+                    
+            #buff_rewards[0, episode_idx] = reward
+            state = next_state
+
+            episode_idx += 1
+
+    
+            if episode_idx < episode_len - 1:
+
+                buff_states[0, episode_idx, :, :] = state
+                buff_rewards[0, episode_idx] = desired_reward
+                buff_actions[0, episode_idx] = best_action
+
+
+                # buff_states = np.zeros(shape=(1, episode_len, field_size, field_size), dtype=np.uint8)
+                # buff_actions = np.zeros(shape=(1, episode_len,), dtype=np.uint8)
+                # buff_rewards = np.zeros(shape=(1, episode_len,), dtype=np.float32)
+
+                # buff_states[0, 0, :, :] = state
+                # buff_rewards[0, 0] = desired_reward
+
+                # none_action_id = field_size*field_size*4 + 1
+                # buff_actions[0, 0:episode_len] = none_action_id
+
+                # episode_idx = 0
+           
+                # state = env.reset()
+                # window.update_game_field()
+
+
+            else:
+                
+                buff_states[0, 0:episode_len-1, :, :] = buff_states[0, 1:episode_len, :, :]
+                buff_states[0, -1, :, :] = state
+
+                buff_rewards[0, 0:episode_len-1] = buff_rewards[0, 1:episode_len]
+                buff_rewards[0, -1] = 0.25
+
+                buff_actions[0, 0:episode_len-1] = buff_actions[0, 1:episode_len]
+                buff_actions[0, -1] = best_action
+
+
+            if reward == 0:
+                cnt_zero += 1
+            else:
+                cnt_zero = 0
             
-            reward = 0
-            if env.isValidAction(action):
-                break 
-        
-        display_execute_action(action, env, window)
-
-    
-    
+            if cnt_zero == episode_len:
 
 
-  
+                buff_states = np.zeros(shape=(1, episode_len, field_size, field_size), dtype=np.uint8)
+                buff_actions = np.zeros(shape=(1, episode_len,), dtype=np.uint8)
+                buff_rewards = np.zeros(shape=(1, episode_len,), dtype=np.float32)
 
+                buff_states[0, 0, :, :] = state
+                buff_rewards[0, 0] = desired_reward
 
+                none_action_id = field_size*field_size*4 + 1
+                buff_actions[0, 0:episode_len] = none_action_id
 
- 
+                state = env.reset()
+                window.update_game_field()
+                episode_idx = 0
+
+                cnt_zero = 0
+                print("reset")
+
+        display_execute_action(best_action, action[:-1], env, window)
+        print(reward)
 
 
 if __name__ == '__main__':
