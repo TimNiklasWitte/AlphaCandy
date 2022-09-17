@@ -112,7 +112,7 @@ def main():
         print(rewards)
         print(y_pos)
         print("-----------")
-        ax[plot_idx].set_title(f"Number of candys: {num_candys}")
+        ax[plot_idx].set_title(f"Number of candies: {num_candys}")
         ax[plot_idx].set_xlabel("Field size")
         ax[plot_idx].set_ylabel("| Avg reward\n- desired reward |")
 
