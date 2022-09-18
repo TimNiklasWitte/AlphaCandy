@@ -48,6 +48,21 @@ python3 Training.py
 The DQN will be trained. 
 Note that, the ReplayMemory has a capacity (maximal amount of training samples) of 1,000,000.
 
+#### PPO
+
+Run `Train.py` with the desired configurations.
+
+```
+usage: Train.py [-h] --size SIZE --num NUM
+
+Setup the desired CandyCrush/Training sconfiguration
+
+optional arguments:
+  -h, --help   show this help message and exit
+  --size SIZE  Set the field size.
+  --num NUM    Set the number of candys.
+```
+
 #### Decision Transformer
 
 First run `GenerateTrainingData.py`.
@@ -91,6 +106,39 @@ optional arguments:
 
 
 ### Window 
+
+Run `PlayGame.py` with desired configuration to see the Decision Transformer play the game.
+The corresponding pretrained weights will be loaded.
+Note that, for each `field_size` and `num_candys` there are different pretrained weights.
+Besides, a GIF can be created.
+
+```
+usage: PlayGame.py [-h] [--field_size FIELD_SIZE] [--num_candys NUM_CANDYS]
+                   [--desired_reward DESIRED_REWARD] [--mode MODE] [--gif GIF]
+
+The Decision Transformer plays Candy Crush.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --field_size FIELD_SIZE
+                        Set the field size (default = 8).
+  --num_candys NUM_CANDYS
+                        Set the number of candys (default = 4).
+  --desired_reward DESIRED_REWARD
+                        Set the desired reward (default = 0.25)
+  --mode MODE           Define the window mode (default: "0") "0" = game
+                        window or "1" = game window with plots
+  --gif GIF             File path where the GIF (screenshots of the window)
+                        will be saved.
+```
+
+#### mode = 0
+
+<img src="./media/play_game_mode_0.gif" width="300" height="300">
+
+#### mode = 1
+
+<img src="./media/play_game_mode_1.gif" width="600" height="600">
 
 ## Results
 
