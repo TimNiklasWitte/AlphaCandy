@@ -24,8 +24,16 @@ Only the Decision Transformer is able to learn it.
 
 ## Results
 
-## DQN
-### Average Reward
+### DQN
+#### Average Reward
 <img src="./DQN/SingleState/Plots/average_reward.png" width="500" height="400">
 
-### Score
+#### Score
+<img src="./DQN/SingleState/Plots/score.png" width="500" height="400">
+
+### PPO
+#### Average Reward
+<img src="./PPO/pictures/PPO_AvgReward.png" width="500" height="400">
+
+#### Score
+<img src="./DQN/SingleState/Plots/PPO_Score.png" width="500" height="400">
