@@ -12,6 +12,7 @@ Only the Decision Transformer is able to produce good results.
 
 <img src="./media/play_game_mode_0.gif" width="300" height="300">
 
+Video: [Project video summary](https://www.youtube.com/watch?v=OzU-eDqEk-g)
 
 ## Requirements
 - TensorFlow 2
