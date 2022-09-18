@@ -26,6 +26,6 @@ Only the Decision Transformer is able to learn it.
 
 ## DQN
 ### Average Reward
-<img src="./DQN/SingleState/average_reward.png" width="300" height="300">
+<img src="./DQN/SingleState/Plots/average_reward.png" width="300" height="300">
 
 ### Score
