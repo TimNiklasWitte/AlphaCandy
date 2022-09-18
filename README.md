@@ -36,4 +36,4 @@ Only the Decision Transformer is able to learn it.
 <img src="./PPO/pictures/PPO_AvgReward.png" width="500" height="400">
 
 #### Score
-<img src="./DQN/SingleState/Plots/PPO_Score.png" width="500" height="400">
+<img src="./PPO/pictures/PPO_Score.png" width="500" height="400">
