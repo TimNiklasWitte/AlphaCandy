@@ -15,7 +15,9 @@ Only the Decision Transformer is able to produce good results.
 
 ## Requirements
 - TensorFlow 2
+- TensorbaordX
 - Numpy
+- gym
 - tkinter
 - matplotlib
 - argparse
