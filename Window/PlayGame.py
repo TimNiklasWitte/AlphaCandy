@@ -1,6 +1,7 @@
 # code based on https://github.com/tobiaskret/iannwtf-project/blob/master/PlayGame.py
 # Tim's Flappy Bird project (TensorFlow course WiSe 2021/22)
 
+from email.policy import default
 from Window import *
 
 import sys
@@ -8,6 +9,7 @@ sys.path.append("../../AlphaCandy")
 from CandyCrushGym import *
 sys.path.append("../Decision Transformer")
 from DecisionTransformer import *
+from Util import *
 
 from threading import Thread
 
@@ -27,7 +29,8 @@ show_swap_time = 1
 show_empty_time = 1
 drop_candy_time = 0.03
 
-def display_execute_action(action, action_probs, env, window):      
+
+def display_execute_action(action, action_probs, desired_reward, env, window):      
 
         #
         # Display arrow
@@ -102,7 +105,7 @@ def display_execute_action(action, action_probs, env, window):
             env.state[y,x] = env.state[y_swap, x_swap]
             env.state[y_swap, x_swap] = tmp
 
-            window.update_plots(reward, action_probs)
+            window.update_plots(reward, action_probs, desired_reward)
             window.update_game_field()
 
             time.sleep(show_empty_time) # show also undo swap game state
@@ -110,7 +113,7 @@ def display_execute_action(action, action_probs, env, window):
             return 
         
         window.update_game_field()
-        window.update_plots(reward, action_probs)
+        window.update_plots(reward, action_probs, desired_reward)
      
         time.sleep(show_empty_time)
 
@@ -151,44 +154,47 @@ def display_execute_action(action, action_probs, env, window):
         window.update_game_field()
 
 
-def checkMode(mode: str):
-    """
-    Check if mode is "0" or "1"
-    Keyword arguments:
-        mode -- Must be "0" or "1" otherwise an exception will be thrown
-    Return:
-        mode 
-    """
-    if mode != "0" and mode != "1":
-        raise argparse.ArgumentTypeError("Invalid mode option. Use \"0\" = game window or \"1\" = game window with plots")
-
-    return mode
-
 
 def main():
 
     episode_len = 10
+    field_size = 6
     num_candys = 4
-    field_size = 8
+    
+    #
+    # Program args handling
+    #
 
     # Set up ArgumentParser
     parser = argparse.ArgumentParser(description="The Decision Transformer plays Candy Crush.")
-    parser.add_argument("--mode", help="Define the window mode (default: \"0\") \"0\" = game window or \"1\" = game window with plots", type=checkMode, required=False)
+    parser.add_argument("--field_size", help="Set the field size (default = 8).", type=checkFieldSize, required=False, default=8)
+    parser.add_argument("--num_candys", help="Set the number of candys (default = 4).", type=checkNumCandys, required=False, default=4)
+    parser.add_argument("--desired_reward", help="Set the desired reward (default = 0.25)", required=False, default=0.25)
+
+    parser.add_argument("--mode", help="Define the window mode (default: \"0\") \"0\" = game window or \"1\" = game window with plots", type=checkMode, required=False, default="0")
     parser.add_argument("--gif", help="File path where the GIF (screenshots of the window) will be saved.", required=False)
+    
 
     args = parser.parse_args()
+
+    # Load args
+    field_size = args.field_size
+    num_candys = args.num_candys
+    desired_reward = args.desired_reward
+
 
     show_plots = False
     if args.mode == "1":
         show_plots = True
 
-
     gif_path = ""
     if args.gif != None:
         gif_path = args.gif
 
-
-    decisionTransformer = DecisionTransformer(episode_len,num_actions=field_size*field_size*4)
+    
+   
+    num_actions = field_size*field_size*4
+    decisionTransformer = DecisionTransformer(episode_len,num_actions=num_actions)
     decisionTransformer.load_weights(f"../Decision Transformer/saved_models/trained_weights_{field_size}_{num_candys}").expect_partial()
 
     seed = np.random.randint(0, 500000)
@@ -203,19 +209,23 @@ def main():
     buff_actions = np.zeros(shape=(1, episode_len,), dtype=np.uint8)
     buff_rewards = np.zeros(shape=(1, episode_len,), dtype=np.float32)
 
-    desired_reward = 0.25
+    
 
     buff_states[0, 0, :, :] = state
     buff_rewards[0, 0] = desired_reward
 
-    none_action_id = field_size*field_size*4 + 1
+    
+    none_action_id = num_actions + 1
     buff_actions[0, 0:episode_len] = none_action_id
 
-    window.update_plots(0, np.zeros(shape=(256,)))
+    window.update_plots(0, np.zeros(shape=(num_actions,)), desired_reward, update_stats=False)
 
-    # thread = Thread(target = record, args = (window, gif_path, ))
-    # if gif_path != "":
-    #     thread.start()
+    #
+    # Thread: creating gif (periodically create a screenshot)
+    #
+    thread = Thread(target = record, args = (window, gif_path, ))
+    if gif_path != "":
+        thread.start()
 
     while True:
             
@@ -299,9 +309,10 @@ def main():
 
                 cnt_zero = 0
                 print("reset")
+        
 
-        display_execute_action(best_action, action[:-1], env, window)
-        print(reward)
+        display_execute_action(best_action, action[:-1], desired_reward, env, window)
+        print(reward, desired_reward)
 
 
 def record(window, gif_path):
@@ -309,11 +320,10 @@ def record(window, gif_path):
 
         while True:
 
-            if gif_path != "":
-                img = get_window_image(window)
-                gif_writer.append_data(img)
+            img = get_window_image(window)
+            gif_writer.append_data(img)
             
-            time.sleep(0.25)
+            time.sleep(0.5)
 
 
 def get_window_image(window: Window):

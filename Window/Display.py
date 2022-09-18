@@ -120,15 +120,15 @@ class Display(tk.Frame):
 
 
   
-    def update_plots(self, reward, action_probs):
+    def update_plots(self, reward, action_probs, desired_reward, update_stats=True):
 
         if not self.show_plots:
             return
 
-        action_top = np.reshape(action_probs[0::4], newshape=(8,8))
-        action_right = np.reshape(action_probs[1::4], newshape=(8,8))
-        action_down = np.reshape(action_probs[2::4], newshape=(8,8))
-        action_left = np.reshape(action_probs[3::4], newshape=(8,8))
+        action_top = np.reshape(action_probs[0::4], newshape=(self.env.FIELD_SIZE, self.env.FIELD_SIZE))
+        action_right = np.reshape(action_probs[1::4], newshape=(self.env.FIELD_SIZE, self.env.FIELD_SIZE))
+        action_down = np.reshape(action_probs[2::4], newshape=(self.env.FIELD_SIZE, self.env.FIELD_SIZE))
+        action_left = np.reshape(action_probs[3::4], newshape=(self.env.FIELD_SIZE, self.env.FIELD_SIZE))
 
         self.fig.clf()
 
@@ -149,13 +149,12 @@ class Display(tk.Frame):
         self.fig.colorbar(img)
 
         #
-        # State value
+        # Desired reward
         #
         state_value_plt = self.fig.add_subplot(333)
-        state_value_plt.set_title("State value")
+        state_value_plt.set_title("Desired reward")
 
-        value = np.random.random()
-        state_value_plt.bar([1], [value], align='center')
+        state_value_plt.bar([1], [desired_reward], align='center')
         state_value_plt.axes.get_xaxis().set_visible(False)
         state_value_plt.grid(True)
 
@@ -180,8 +179,10 @@ class Display(tk.Frame):
         #
         collected_rewards_plt = self.fig.add_subplot(336)
 
-        self.steps.append(self.step_cnt)
-        self.collected_rewards.append(reward)
+        if update_stats:
+            self.steps.append(self.step_cnt)
+            self.collected_rewards.append(reward)
+            print(f"reward {reward}")
 
         collected_rewards_plt.plot(self.steps, self.collected_rewards, label="Reward")
         collected_rewards_plt.set_xlim(left=max(0, self.step_cnt - 50), right=self.step_cnt + 50)
@@ -191,7 +192,9 @@ class Display(tk.Frame):
         collected_rewards_plt.set_ylabel("Reward")
         collected_rewards_plt.grid(True)
         collected_rewards_plt.set_ylim(0, 2)
-        self.step_cnt += 1
+
+        if update_stats:
+            self.step_cnt += 1
 
         # Plot mean of collected rewards (not all! only of displayed)
         collected_rewards_part = self.collected_rewards[max(0, self.step_cnt - 50):self.step_cnt]
