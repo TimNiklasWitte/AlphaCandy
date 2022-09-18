@@ -37,3 +37,10 @@ Only the Decision Transformer is able to learn it.
 
 #### Score
 <img src="./PPO/pictures/PPO_Score.png" width="500" height="400">
+
+### Decision Transformer
+#### Training (Accuracy on test dataset)
+<img src="./Decision Transformer/Plots/DesiredRewardPerformance.png" width="500" height="400">
+
+#### Error of desired reward and achieved reward (absolute value)
+<img src="./Decision Transformer/Plots/ErrorDesiredRewardPerformance.png" width="500" height="400">
