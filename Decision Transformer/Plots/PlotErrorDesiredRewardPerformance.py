@@ -94,15 +94,17 @@ def main():
                 
                 rewards_desired_reward.append(avg_reward)
 
-                #print(f"{num_candys} {field_size} {avg_reward}")
+                print(f"{num_candys} {field_size} {avg_reward}")
 
             rewards.append(rewards_desired_reward)
         y_pos = np.arange(5, 9)
 
         width=0.8
         num_desired_rewards = len(desired_rewards)
+    
         for idx, desired_reward in enumerate(desired_rewards): 
-            ax[plot_idx].bar(y_pos - width/2. + idx/float(num_desired_rewards)*width, rewards[idx], 
+            error = [abs(desired_reward - x) for x in rewards[idx]]
+            ax[plot_idx].bar(y_pos - width/2. + idx/float(num_desired_rewards)*width, error, 
                 width=width/float(num_desired_rewards), align="edge", label=desired_reward)  
 
         #ax[plot_idx].bar(y_pos, rewards[0])
@@ -110,9 +112,9 @@ def main():
         print(rewards)
         print(y_pos)
         print("-----------")
-        ax[plot_idx].set_title(f"Number of candys: {num_candys}")
+        ax[plot_idx].set_title(f"Number of candies: {num_candys}")
         ax[plot_idx].set_xlabel("Field size")
-        ax[plot_idx].set_ylabel("Average reward")
+        ax[plot_idx].set_ylabel("| Avg reward\n- desired reward |")
 
         ax[plot_idx].xaxis.set_major_locator(MaxNLocator(integer=True))
         
@@ -126,7 +128,7 @@ def main():
     fig.set_size_inches(w=6, h=6)
             
     plt.tight_layout()
-    plt.savefig("./DesiredRewardPerformance.png")
+    plt.savefig("./ErrorDesiredRewardPerformance.png")
     plt.show()
 
 if __name__ == "__main__":

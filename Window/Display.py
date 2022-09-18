@@ -107,19 +107,14 @@ class Display(tk.Frame):
                 self.previous_state[y,x] = candyID
 
 
-    def update_plots(self, reward):
+  
+    def update_plots(self, reward, action_probs):
 
 
-        noise = np.random.random(256)
-
-        # softmax
-        e_x = np.exp(noise - np.max(noise))
-        probs = e_x / e_x.sum(axis=0)
-
-        action_top = np.reshape(probs[0::4], newshape=(8,8))
-        action_right = np.reshape(probs[1::4], newshape=(8,8))
-        action_down = np.reshape(probs[2::4], newshape=(8,8))
-        action_left = np.reshape(probs[3::4], newshape=(8,8))
+        action_top = np.reshape(action_probs[0::4], newshape=(8,8))
+        action_right = np.reshape(action_probs[1::4], newshape=(8,8))
+        action_down = np.reshape(action_probs[2::4], newshape=(8,8))
+        action_left = np.reshape(action_probs[3::4], newshape=(8,8))
 
         self.fig.clf()
 

@@ -22,7 +22,7 @@ def main():
        
             ax[plot_idx].plot(data, label=f"field size = {field_size}")
 
-            ax[plot_idx].set_title(f"Number of candys: {num_candy}")
+            ax[plot_idx].set_title(f"Number of candies: {num_candy}")
             ax[plot_idx].set_xlabel("Epoch")
             ax[plot_idx].set_ylabel("Test Accuracy")
             ax[plot_idx].grid(True)

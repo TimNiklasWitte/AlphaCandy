@@ -32,5 +32,5 @@ class Window:
     def update_game_field(self):
         self.display.update_game_field()
     
-    def update_plots(self, reward):
-        self.display.update_plots(reward)
+    def update_plots(self, reward, action_probs):
+        self.display.update_plots(reward, action_probs)
