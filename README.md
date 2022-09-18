@@ -36,7 +36,7 @@ First run `ReplayMemory.py`
 python3 ReplayMemory.py
 ```
 
-It initializes a Replay Memory with 500.000 samples.
+This initializes a Replay Memory with 500.000 samples.
 It creates the following files `states_500000`, `actions_500000`, `next_states_500000` and 
 `rewards_500000`.
 These files will be loaded by the `ReplayMemory.py` script when `Training.py` is launched.
