@@ -24,7 +24,6 @@ class Display(tk.Frame):
         self.image_size = 60
 
         if show_plots:
-            print("here\n")
             self.window_height = env.FIELD_SIZE * self.image_size + 250
             self.window_width = env.FIELD_SIZE * self.image_size + 1000
         else:
@@ -182,10 +181,10 @@ class Display(tk.Frame):
         if update_stats:
             self.steps.append(self.step_cnt)
             self.collected_rewards.append(reward)
-            print(f"reward {reward}")
+          
 
         collected_rewards_plt.plot(self.steps, self.collected_rewards, label="Reward")
-        collected_rewards_plt.set_xlim(left=max(0, self.step_cnt - 50), right=self.step_cnt + 50)
+        collected_rewards_plt.set_xlim(left=max(0, self.step_cnt - 10), right=self.step_cnt + 10)
      
         collected_rewards_plt.set_title("Obtained rewards")
         collected_rewards_plt.set_xlabel("Step")

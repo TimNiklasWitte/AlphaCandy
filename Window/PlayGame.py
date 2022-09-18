@@ -235,6 +235,8 @@ def main():
         episode_idx = 0
             
         cnt_zero = 0
+
+        current_state = np.copy(env.state)
         while reward == 0:
 
             #
@@ -304,15 +306,17 @@ def main():
                 buff_actions[0, 0:episode_len] = none_action_id
 
                 state = env.reset()
+                current_state = np.copy(env.state)
                 window.update_game_field()
                 episode_idx = 0
 
                 cnt_zero = 0
-                print("reset")
+      
         
 
+        env.state = current_state
         display_execute_action(best_action, action[:-1], desired_reward, env, window)
-        print(reward, desired_reward)
+
 
 
 def record(window, gif_path):
