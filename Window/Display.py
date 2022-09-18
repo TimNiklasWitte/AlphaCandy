@@ -7,6 +7,8 @@ import matplotlib
 matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+from matplotlib.ticker import MaxNLocator
+
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 
@@ -200,6 +202,8 @@ class Display(tk.Frame):
         mean_collected_rewards_part = np.mean(collected_rewards_part)
         collected_rewards_plt.axhline(mean_collected_rewards_part, color='r', linestyle="--", label="Mean")
         collected_rewards_plt.legend(loc='lower right')
+
+        collected_rewards_plt.xaxis.set_major_locator(MaxNLocator(integer=True))
 
         self.fig.tight_layout()
         self.canvas_plot.draw()
