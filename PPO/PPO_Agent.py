@@ -7,6 +7,7 @@ import pylab
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import *
+from tensorflow.keras.optimizers import Adam
 tf.compat.v1.disable_eager_execution()
 from tensorboardX import SummaryWriter
 import copy
