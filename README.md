@@ -22,6 +22,31 @@ Only the Decision Transformer is able to learn it.
 - imageio
 - pyautogui
 
+## Usage
+
+### Training
+
+#### DQN
+
+First run `ReplayMemory.py` 
+
+```
+python3 ReplayMemory.py
+```
+
+It initialize a Replay Memory with 500.000 samples.
+It creates the following files `states_500000`, `actions_500000`, `next_states_500000` and 
+`rewards_500000`.
+These files will be loaded by the `ReplayMemory.py` when `Training.py` is launched.
+
+After `ReplayMemory.py` was launched, `Training.py` must be started.
+
+```
+python3 Training.py
+```
+
+### Window 
+
 ## Results
 
 ### DQN
