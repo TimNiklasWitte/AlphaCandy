@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter.constants import *
+from turtle import right
 
 import matplotlib
 
@@ -14,15 +15,25 @@ import sys
 
 class Display(tk.Frame):
 
-    def __init__(self, master, env):
+    def __init__(self, master, env, show_plots):
+
+        self.show_plots = show_plots
+
         # Window contains also plots
 
         self.image_size = 60
-        self.window_height = env.FIELD_SIZE * self.image_size + 250
-        self.window_width = env.FIELD_SIZE * self.image_size + 1000
+
+        if show_plots:
+            print("here\n")
+            self.window_height = env.FIELD_SIZE * self.image_size + 250
+            self.window_width = env.FIELD_SIZE * self.image_size + 1000
+        else:
+            self.window_height = env.FIELD_SIZE * self.image_size
+            self.window_width = env.FIELD_SIZE * self.image_size
 
         self.root_img_path = sys.path[0]+"/Images"
         self.env = env
+        
 
         # Game window
         tk.Frame.__init__(self, master)
@@ -31,9 +42,10 @@ class Display(tk.Frame):
         self.canvas.pack(side=LEFT)
 
         # Plots
-        self.fig = Figure(figsize=(6, 6), dpi=100)
-        self.canvas_plot = FigureCanvasTkAgg(self.fig, master=master)
-        self.canvas_plot.get_tk_widget().pack(side=RIGHT, fill=tk.BOTH, expand=True)
+        if show_plots:
+            self.fig = Figure(figsize=(6, 6), dpi=100)
+            self.canvas_plot = FigureCanvasTkAgg(self.fig, master=master)
+            self.canvas_plot.get_tk_widget().pack(side=RIGHT, fill=tk.BOTH, expand=True)
 
 
         self.step_cnt = 0
@@ -110,6 +122,8 @@ class Display(tk.Frame):
   
     def update_plots(self, reward, action_probs):
 
+        if not self.show_plots:
+            return
 
         action_top = np.reshape(action_probs[0::4], newshape=(8,8))
         action_right = np.reshape(action_probs[1::4], newshape=(8,8))
@@ -171,11 +185,12 @@ class Display(tk.Frame):
 
         collected_rewards_plt.plot(self.steps, self.collected_rewards, label="Reward")
         collected_rewards_plt.set_xlim(left=max(0, self.step_cnt - 50), right=self.step_cnt + 50)
+     
         collected_rewards_plt.set_title("Obtained rewards")
         collected_rewards_plt.set_xlabel("Step")
         collected_rewards_plt.set_ylabel("Reward")
         collected_rewards_plt.grid(True)
-        collected_rewards_plt.set_ylim(0, 1)
+        collected_rewards_plt.set_ylim(0, 2)
         self.step_cnt += 1
 
         # Plot mean of collected rewards (not all! only of displayed)
