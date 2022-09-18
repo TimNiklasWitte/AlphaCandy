@@ -11,3 +11,21 @@ It turn out that DQN and PPO are unable to learn the Candy Crush game.
 Only the Decision Transformer is able to learn it.
 
 <img src="./media/play_game_mode_0.gif" width="300" height="300">
+
+
+## Requirements
+- TensorFlow 2
+- Numpy
+- tkinter
+- matplotlib
+- argparse
+- imageio
+- pyautogui
+
+## Results
+
+## DQN
+### Average Reward
+<img src="./DQN/SingleState/average_reward.png" width="300" height="300">
+
+### Score
