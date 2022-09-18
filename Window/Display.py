@@ -1,10 +1,13 @@
 import tkinter as tk
 from tkinter.constants import *
+from turtle import right
 
 import matplotlib
 
 matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
+from matplotlib.ticker import MaxNLocator
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -14,15 +17,24 @@ import sys
 
 class Display(tk.Frame):
 
-    def __init__(self, master, env):
+    def __init__(self, master, env, show_plots):
+
+        self.show_plots = show_plots
+
         # Window contains also plots
 
         self.image_size = 60
-        self.window_height = env.FIELD_SIZE * self.image_size + 250
-        self.window_width = env.FIELD_SIZE * self.image_size + 1000
+
+        if show_plots:
+            self.window_height = env.FIELD_SIZE * self.image_size + 250
+            self.window_width = env.FIELD_SIZE * self.image_size + 1000
+        else:
+            self.window_height = env.FIELD_SIZE * self.image_size
+            self.window_width = env.FIELD_SIZE * self.image_size
 
         self.root_img_path = sys.path[0]+"/Images"
         self.env = env
+        
 
         # Game window
         tk.Frame.__init__(self, master)
@@ -31,9 +43,10 @@ class Display(tk.Frame):
         self.canvas.pack(side=LEFT)
 
         # Plots
-        self.fig = Figure(figsize=(6, 6), dpi=100)
-        self.canvas_plot = FigureCanvasTkAgg(self.fig, master=master)
-        self.canvas_plot.get_tk_widget().pack(side=RIGHT, fill=tk.BOTH, expand=True)
+        if show_plots:
+            self.fig = Figure(figsize=(6, 6), dpi=100)
+            self.canvas_plot = FigureCanvasTkAgg(self.fig, master=master)
+            self.canvas_plot.get_tk_widget().pack(side=RIGHT, fill=tk.BOTH, expand=True)
 
 
         self.step_cnt = 0
@@ -107,19 +120,16 @@ class Display(tk.Frame):
                 self.previous_state[y,x] = candyID
 
 
-    def update_plots(self, reward):
+  
+    def update_plots(self, reward, action_probs, desired_reward, update_stats=True):
 
+        if not self.show_plots:
+            return
 
-        noise = np.random.random(256)
-
-        # softmax
-        e_x = np.exp(noise - np.max(noise))
-        probs = e_x / e_x.sum(axis=0)
-
-        action_top = np.reshape(probs[0::4], newshape=(8,8))
-        action_right = np.reshape(probs[1::4], newshape=(8,8))
-        action_down = np.reshape(probs[2::4], newshape=(8,8))
-        action_left = np.reshape(probs[3::4], newshape=(8,8))
+        action_top = np.reshape(action_probs[0::4], newshape=(self.env.FIELD_SIZE, self.env.FIELD_SIZE))
+        action_right = np.reshape(action_probs[1::4], newshape=(self.env.FIELD_SIZE, self.env.FIELD_SIZE))
+        action_down = np.reshape(action_probs[2::4], newshape=(self.env.FIELD_SIZE, self.env.FIELD_SIZE))
+        action_left = np.reshape(action_probs[3::4], newshape=(self.env.FIELD_SIZE, self.env.FIELD_SIZE))
 
         self.fig.clf()
 
@@ -140,13 +150,12 @@ class Display(tk.Frame):
         self.fig.colorbar(img)
 
         #
-        # State value
+        # Desired reward
         #
         state_value_plt = self.fig.add_subplot(333)
-        state_value_plt.set_title("State value")
+        state_value_plt.set_title("Desired reward")
 
-        value = np.random.random()
-        state_value_plt.bar([1], [value], align='center')
+        state_value_plt.bar([1], [desired_reward], align='center')
         state_value_plt.axes.get_xaxis().set_visible(False)
         state_value_plt.grid(True)
 
@@ -171,23 +180,30 @@ class Display(tk.Frame):
         #
         collected_rewards_plt = self.fig.add_subplot(336)
 
-        self.steps.append(self.step_cnt)
-        self.collected_rewards.append(reward)
+        if update_stats:
+            self.steps.append(self.step_cnt)
+            self.collected_rewards.append(reward)
+          
 
         collected_rewards_plt.plot(self.steps, self.collected_rewards, label="Reward")
-        collected_rewards_plt.set_xlim(left=max(0, self.step_cnt - 50), right=self.step_cnt + 50)
+        collected_rewards_plt.set_xlim(left=max(0, self.step_cnt - 10), right=self.step_cnt + 10)
+     
         collected_rewards_plt.set_title("Obtained rewards")
         collected_rewards_plt.set_xlabel("Step")
         collected_rewards_plt.set_ylabel("Reward")
         collected_rewards_plt.grid(True)
-        collected_rewards_plt.set_ylim(0, 1)
-        self.step_cnt += 1
+        collected_rewards_plt.set_ylim(0, 2)
+
+        if update_stats:
+            self.step_cnt += 1
 
         # Plot mean of collected rewards (not all! only of displayed)
         collected_rewards_part = self.collected_rewards[max(0, self.step_cnt - 50):self.step_cnt]
         mean_collected_rewards_part = np.mean(collected_rewards_part)
         collected_rewards_plt.axhline(mean_collected_rewards_part, color='r', linestyle="--", label="Mean")
         collected_rewards_plt.legend(loc='lower right')
+
+        collected_rewards_plt.xaxis.set_major_locator(MaxNLocator(integer=True))
 
         self.fig.tight_layout()
         self.canvas_plot.draw()
