@@ -45,6 +45,51 @@ After `ReplayMemory.py` was launched, `Training.py` must be started.
 python3 Training.py
 ```
 
+The DQN will be trained. 
+Note that, the ReplayMemory has a capacity (maximal amount of training samples) of 1,000,000.
+
+#### Decision Transformer
+
+First run `GenerateTrainingData.py`.
+This script will generate the training data as configured (program arguments):
+
+```
+usage: GenerateTrainingData.py [-h] --fieldSize FIELDSIZE --numCandys
+                               NUMCANDYS --trainSize TRAINSIZE
+
+Create Training data.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --fieldSize FIELDSIZE
+                        Set the field size.
+  --numCandys NUMCANDYS
+                        Set the number of candys.
+  --trainSize TRAINSIZE
+                        Set the number of training samples.
+```
+
+Now run `Training.py`. It will train the Decision Transformer.
+It must be launched with the same configuration as `GenerateTrainingData.py`.
+
+```
+usage: Training.py [-h] --fieldSize FIELDSIZE --numCandys NUMCANDYS
+                   --trainSize TRAINSIZE --epochs EPOCHS
+
+Create Training data.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --fieldSize FIELDSIZE
+                        Set the field size.
+  --numCandys NUMCANDYS
+                        Set the number of candys.
+  --trainSize TRAINSIZE
+                        Set the number of training samples.
+  --epochs EPOCHS       Set the number of epochs.
+```
+
+
 ### Window 
 
 ## Results
