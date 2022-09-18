@@ -10,4 +10,4 @@ This repository also contains a parameterizable Candy Crush field size and numbe
 It turn out that DQN and PPO are unable to learn the Candy Crush game.
 Only the Decision Transformer is able to learn it.
 
-<img src="./media/play_game_mode_0.gif" width="1000" height="300">
+<img src="./media/play_game_mode_0.gif" width="300" height="300">
