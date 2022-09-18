@@ -3,12 +3,12 @@
 ## by Marc Zeller, Robin Gratz and Tim Niklas Witte 
 
 
-This repository contains three approaches to play the game Candy Crush.
-These three approaches are a Deep Q-Network (DQN), a Proximal Policy Optimization (PPO) algorithm
+This repository contains three approaches to playing the game of Candy Crush.
+Said approaches consist of a Deep Q-Network (DQN), a Proximal Policy Optimization (PPO) algorithm
 and a Decision Transformer.
-This repository also contains a parameterizable Candy Crush field size and number of candies.
-It turn out that DQN and PPO are unable to learn the Candy Crush game.
-Only the Decision Transformer is able to learn it.
+This repository also contains a parameterizable Candy Crush environment wrt. to the total field size and the number of candies.
+It turns out that both DQN and PPO are unable to learn the Candy Crush game succefully.
+Only the Decision Transformer is able to produce good results.
 
 <img src="./media/play_game_mode_0.gif" width="300" height="300">
 
@@ -34,19 +34,19 @@ First run `ReplayMemory.py`
 python3 ReplayMemory.py
 ```
 
-It initialize a Replay Memory with 500.000 samples.
+It initializes a Replay Memory with 500.000 samples.
 It creates the following files `states_500000`, `actions_500000`, `next_states_500000` and 
 `rewards_500000`.
-These files will be loaded by the `ReplayMemory.py` when `Training.py` is launched.
+These files will be loaded by the `ReplayMemory.py` script when `Training.py` is launched.
 
-After `ReplayMemory.py` was launched, `Training.py` must be started.
+After `ReplayMemory.py` is launched, `Training.py` must be started.
 
 ```
 python3 Training.py
 ```
 
 The DQN will be trained. 
-Note that, the ReplayMemory has a capacity (maximal amount of training samples) of 1,000,000.
+Note that the ReplayMemory has a capacity (maximum amount of training samples) of 1,000,000.
 
 #### PPO
 
@@ -107,10 +107,10 @@ optional arguments:
 
 ### Window 
 
-Run `PlayGame.py` with desired configuration to see the Decision Transformer play the game.
+Run `PlayGame.py` with desired configuration to watch the Decision Transformer play the game.
 The corresponding pretrained weights will be loaded.
 Note that, for each `field_size` and `num_candys` there are different pretrained weights.
-Besides, a GIF can be created.
+Besides that, a GIF can also be created.
 
 ```
 usage: PlayGame.py [-h] [--field_size FIELD_SIZE] [--num_candys NUM_CANDYS]
@@ -119,7 +119,7 @@ usage: PlayGame.py [-h] [--field_size FIELD_SIZE] [--num_candys NUM_CANDYS]
 The Decision Transformer plays Candy Crush.
 
 optional arguments:
-  -h, --help            show this help message and exit
+  -h, --help            Show this help message and exit
   --field_size FIELD_SIZE
                         Set the field size (default = 8).
   --num_candys NUM_CANDYS
