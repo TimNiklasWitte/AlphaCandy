@@ -138,7 +138,7 @@ optional arguments:
 
 #### mode = 1
 
-<img src="./media/play_game_mode_1.gif" width="300" height="1500">
+<img src="./media/play_game_mode_1.gif" width="1500" height="300">
 
 ## Results
 
